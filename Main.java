@@ -6,7 +6,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
-        Server gameServer = new Server(25565);
+        try {
+            Server gameServer = new Server(25565);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 
@@ -14,10 +18,15 @@ class Server {
     private ArrayList<ClientConnection> clientList;
     private LinkedBlockingQueue<Message> messages;
     private ServerSocket serverSocket;
+    private ArrayList<Game> currentGames;
+    private LinkedBlockingQueue<ClientConnection> waiting;
+    private Game cGame;
 
-    public Server(int port) {
-        clientList = new ArrayList<ClientConnection>();
-        messages = new LinkedBlockingQueue<Message>();
+    public Server(int port) throws IOException{
+        clientList = new ArrayList<>();
+        messages = new LinkedBlockingQueue<>();
+        currentGames = new ArrayList<>();
+        waiting = new LinkedBlockingQueue<>();
         serverSocket = new ServerSocket(port);
 
         Thread accept = new Thread() {
@@ -26,9 +35,23 @@ class Server {
                     try {
                         Socket s = serverSocket.accept();
                         ClientConnection player = new ClientConnection(s, messages);
-                        clientList.add(player);
                         player.write(rah.messageBuilder(0,  ""));
-                    } catch (IOException e) {
+
+                        clientList.add(player);
+                        waiting.add(player);
+
+                        if (!cGame.hasStarted() && cGame.size() != 100) {
+                            cGame.addPlayer(player);
+                        } else {
+                            if (waiting.size() > 60) {
+                                cGame = new Game();
+
+                                while (!waiting.isEmpty()) {
+                                    cGame.addPlayer(waiting.take());
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

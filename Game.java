@@ -8,48 +8,42 @@ public class Game {
     private ArrayList<ClientConnection> clientList;
     private LinkedBlockingQueue<Message> messages;
     private ServerSocket serverSocket;
+    private boolean Started = false;
 
-    public Server(int port) {
+    public Game() {
         clientList = new ArrayList<ClientConnection>();
         messages = new LinkedBlockingQueue<Message>();
-        serverSocket = new ServerSocket(port);
 
-        Thread accept = new Thread() {
-            public void run() {
-                while (true) {
-                    try {
-                        Socket s = serverSocket.accept();
-                        clientList.add(new ClientConnection(s, messages));
-                    } catch (IOException e) {
+        Thread read = new Thread(){
+            public void run(){
+                while(true){
+                    try{
+                        Message obj = (Message) in.readObject();
+                        messages.put(obj);
+                    }
+                    catch(Exception e){
                         e.printStackTrace();
                     }
                 }
             }
         };
-
-        accept.setDaemon(true);
-        accept.start();
-
-        Thread messageHandling = new Thread() {
-            public void run() {
-                while (true) {
-                    try {
-                        Message message = messages.take();
-
-                        System.out.println("Message Received: " + message.);
-                    } catch (InterruptedException e) {
-                    }
-                }
-            }
-        };
-
-        messageHandling.setDaemon(true);
-        messageHandling.start();
     }
 
     public void broadcast(Message message) {
         for (ClientConnection client : clientList) {
             client.write(message);
         }
+    }
+
+    public boolean hasStarted() {
+        return Started;
+    }
+
+    public int size() {
+        return clientList.size();
+    }
+
+    public void addPlayer(ClientConnection player) {
+        clientList.add(player);
     }
 }
