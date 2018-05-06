@@ -13,20 +13,6 @@ public class Game {
     public Game() {
         clientList = new ArrayList<ClientConnection>();
         messages = new LinkedBlockingQueue<Message>();
-
-        Thread read = new Thread(){
-            public void run(){
-                while(true){
-                    try{
-                        Message obj = (Message) in.readObject();
-                        messages.put(obj);
-                    }
-                    catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
     }
 
     public void broadcast(Message message) {

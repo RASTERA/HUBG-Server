@@ -2,12 +2,18 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
     public static void main(String[] args) {
         try {
             Server gameServer = new Server(25565);
+
+            Scanner input = new Scanner(System.in);
+
+            String temp = input.next();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -34,13 +40,15 @@ class Server {
                 while (true) {
                     try {
                         Socket s = serverSocket.accept();
+
+                        System.out.println("connection from" + s.getChannel());
                         ClientConnection player = new ClientConnection(s, messages);
-                        player.write(rah.messageBuilder(0,  ""));
+                        player.write(rah.messageBuilder(0,  "Welcome to the server, there are currently " + clientList.size() + " players online."));
 
                         clientList.add(player);
                         waiting.add(player);
 
-                        if (!cGame.hasStarted() && cGame.size() != 100) {
+                        if (cGame != null && !cGame.hasStarted() && cGame.size() != 100) {
                             cGame.addPlayer(player);
                         } else {
                             if (waiting.size() > 60) {

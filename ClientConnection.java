@@ -13,8 +13,8 @@ public class ClientConnection {
     public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages) throws IOException {
         this.socket = socket;
         this.messages = messages;
-        in = new ObjectInputStream(socket.getInputStream());
         out = new ObjectOutputStream(socket.getOutputStream());
+        in = new ObjectInputStream(socket.getInputStream());
 
         Thread read = new Thread(){
             public void run(){
@@ -36,7 +36,9 @@ public class ClientConnection {
 
     public void write(Object obj) {
         try{
+            System.out.println("Writing");
             out.writeObject(obj);
+            System.out.println("Write Success");
         }
         catch(IOException e){
             e.printStackTrace();
