@@ -29,7 +29,7 @@ public class ClientConnection {
                                 name = ((String[]) obj.message)[0];
                                 break;
                             case 10:
-                                player.setLocation((int[]) obj.message);
+                                player.setLocation((double[]) obj.message);
                                 messages.put(obj);
                                 break;
                         }
