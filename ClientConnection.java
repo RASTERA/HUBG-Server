@@ -5,10 +5,12 @@ import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ClientConnection {
+    String name;
     ObjectInputStream in;
     ObjectOutputStream out;
     LinkedBlockingQueue<Message> messages;
     Socket socket;
+    Player player;
 
     public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages) throws IOException {
         this.socket = socket;
@@ -21,7 +23,16 @@ public class ClientConnection {
                 while(true){
                     try{
                         Message obj = (Message) in.readObject();
-                        messages.put(obj);
+
+                        switch (obj.type) {
+                            case 1:
+                                name = ((String[]) obj.message)[0];
+                                break;
+                            case 10:
+                                player.setLocation((int[]) obj.message);
+                                messages.put(obj);
+                                break;
+                        }
                     }
                     catch(Exception e){
                         e.printStackTrace();
@@ -32,6 +43,15 @@ public class ClientConnection {
 
         read.setDaemon(true); // terminate when main ends
         read.start();
+    }
+
+    public void setMessageQueue(LinkedBlockingQueue<Message> messages) {
+        this.messages = messages;
+    }
+
+    public void setPlayer (Player player) {
+        this.player = player;
+        player.name = this.name;
     }
 
     public void write(Object obj) {
