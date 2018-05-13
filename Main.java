@@ -27,6 +27,7 @@ class Server {
     private ArrayList<Game> currentGames;
     private LinkedBlockingQueue<ClientConnection> waiting;
     private Game cGame;
+    private int counter = 0;
 
     public Server(int port) throws IOException{
         clientList = new ArrayList<>();
@@ -42,8 +43,10 @@ class Server {
                         Socket s = serverSocket.accept();
 
                         System.out.println("connection from" + s.getChannel());
-                        ClientConnection player = new ClientConnection(s, messages);
-                        player.write(rah.messageBuilder(0,  "Welcome to the server, there are currently " + clientList.size() + " players online."));
+                        ClientConnection player = new ClientConnection(s, messages, counter);
+                        player.write(rah.messageBuilder(0,  counter));
+
+                        counter++;
 
                         clientList.add(player);
                         waiting.add(player);

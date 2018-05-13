@@ -5,23 +5,27 @@ import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ClientConnection {
-    String name;
-    ObjectInputStream in;
-    ObjectOutputStream out;
-    LinkedBlockingQueue<Message> messages;
-    Socket socket;
-    Player player;
+    private String name;
+    public ObjectInputStream in;
+    public ObjectOutputStream out;
+    public LinkedBlockingQueue<Message> messages;
+    private Socket socket;
+    public Player player;
+    private int id;
 
-    public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages) throws IOException {
+
+    public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages, int id) throws IOException {
         this.socket = socket;
         this.messages = messages;
+        this.id = id;
+
         out = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
 
-        Thread read = new Thread(){
-            public void run(){
-                while(true){
-                    try{
+        Thread read = new Thread() {
+            public void run() {
+                while (true) {
+                    try {
                         Message obj = (Message) in.readObject();
 
                         switch (obj.type) {
@@ -29,12 +33,11 @@ public class ClientConnection {
                                 name = ((String[]) obj.message)[0];
                                 break;
                             case 10:
-                                player.setLocation((double[]) obj.message);
+                                player.setLocation((float[]) obj.message);
                                 messages.put(obj);
                                 break;
                         }
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -49,19 +52,22 @@ public class ClientConnection {
         this.messages = messages;
     }
 
-    public void setPlayer (Player player) {
+    public void setPlayer(Player player) {
         this.player = player;
         player.name = this.name;
     }
 
     public void write(Object obj) {
-        try{
+        try {
             System.out.println("Writing");
             out.writeObject(obj);
             System.out.println("Write Success");
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public int getId() {
+        return id;
     }
 }

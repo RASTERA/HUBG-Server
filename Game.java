@@ -67,12 +67,21 @@ public class Game{
         Player currentPlayer;
         Random rand = new Random();
 
+        ///////////////////////////
+        // Temp var
+        ArrayList<float[]> locations = new ArrayList<>();
+
+
+        ///////////////////////////
+
         for (ClientConnection conn : clientList) {
-            currentPlayer = new Player(rand.nextInt(5000), rand.nextInt(5000), Math.toRadians(rand.nextDouble()*360));
+            currentPlayer = new Player(rand.nextFloat()*5000, rand.nextFloat()*5000, (float) Math.toRadians(rand.nextFloat()*360));
             conn.setMessageQueue(messages);
-            playerList.add(currentPlayer);
+            //playerList.add(currentPlayer);
+
+            locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation});
         }
 
-        broadcast(rah.messageBuilder(1, playerList));
+        broadcast(rah.messageBuilder(1, locations));
     }
 }
