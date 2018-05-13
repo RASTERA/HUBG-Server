@@ -54,7 +54,7 @@ class Server {
                         if (cGame != null && !cGame.hasStarted() && cGame.size() != 100) {
                             cGame.addPlayer(player);
                         } else {
-                            if (waiting.size() > 60) {
+                            if (waiting.size() > 1) {
                                 cGame = new Game();
 
                                 while (!waiting.isEmpty()) {

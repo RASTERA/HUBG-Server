@@ -5,14 +5,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Game{
     private ArrayList<ClientConnection> clientList;
-    private LinkedBlockingQueue<Message> messages;
+    private LinkedBlockingQueue<Message> gameMessage;
     private ArrayList<Player> playerList;
     private ServerSocket serverSocket;
     private boolean Started = false;
 
     public Game() {
         clientList = new ArrayList<>();
-        messages = new LinkedBlockingQueue<>();
+        gameMessage = new LinkedBlockingQueue<>();
         playerList = new ArrayList<>();
     }
 
@@ -33,19 +33,20 @@ public class Game{
     public void addPlayer(ClientConnection player) {
         clientList.add(player);
 
-        if (clientList.size() == 100) {
+        if (clientList.size() == 2) {
             Thread GameProcessor = new Thread() {
                 public void run() {
+                    startGame();
                     while (true) {
                         try {
-                            startGame();
-
                             while (clientList.size() != 1) {
-                                Message mainMessage = messages.take();
+                                Message mainMessage = gameMessage.take();
+
+                                System.out.println("Receive location update");
 
                                 switch (mainMessage.type) {
                                     case 10:
-                                        broadcast(rah.messageBuilder(20, mainMessage.message));
+                                        broadcast(mainMessage);
                                         break;
                                 }
                             }
@@ -75,11 +76,12 @@ public class Game{
         ///////////////////////////
 
         for (ClientConnection conn : clientList) {
-            currentPlayer = new Player(rand.nextFloat()*5000, rand.nextFloat()*5000, (float) Math.toRadians(rand.nextFloat()*360));
-            conn.setMessageQueue(messages);
+            currentPlayer = new Player(rand.nextFloat()*-50, rand.nextFloat()*-50, (float) Math.toRadians(rand.nextFloat()*360));
+            conn.setPlayer(currentPlayer);
+            conn.setMessageQueue(gameMessage);
             //playerList.add(currentPlayer);
 
-            locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation});
+            locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
         }
 
         broadcast(rah.messageBuilder(1, locations));
