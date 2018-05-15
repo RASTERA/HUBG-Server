@@ -11,12 +11,13 @@ public class ClientConnection {
     public LinkedBlockingQueue<Message> messages;
     private Socket socket;
     public Player player;
+    public int id;
 
 
     public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages, int id) throws IOException {
         this.socket = socket;
         this.messages = messages;
-        this.player.id = id;
+        this.id = id;
 
         out = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
@@ -75,6 +76,6 @@ public class ClientConnection {
     }
 
     public int getId() {
-        return this.player.id;
+        return this.id;
     }
 }
