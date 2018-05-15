@@ -1,5 +1,6 @@
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -28,6 +29,11 @@ public class Game{
 
     public int size() {
         return clientList.size();
+    }
+
+    public LinkedList<Player> findPlayersInRange (Message locationUpdate) {
+        LinkedList<Player> enemyPlayers = new LinkedList<>();
+        return enemyPlayers;
     }
 
     public void addPlayer(ClientConnection player) {

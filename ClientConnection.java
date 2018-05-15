@@ -11,13 +11,12 @@ public class ClientConnection {
     public LinkedBlockingQueue<Message> messages;
     private Socket socket;
     public Player player;
-    private int id;
 
 
     public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages, int id) throws IOException {
         this.socket = socket;
         this.messages = messages;
-        this.id = id;
+        this.player.id = id;
 
         out = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
@@ -27,16 +26,8 @@ public class ClientConnection {
                 while (true) {
                     try {
                         Message obj = (Message) in.readObject();
+                        MessageProcessor(obj);
 
-                        switch (obj.type) {
-                            case 1:
-                                name = ((String[]) obj.message)[0];
-                                break;
-                            case 10:
-                                player.setLocation((float[]) obj.message);
-                                messages.put(obj);
-                                break;
-                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -67,7 +58,23 @@ public class ClientConnection {
         }
     }
 
+    public void MessageProcessor(Message obj) {
+        try {
+            switch (obj.type) {
+                case 1:
+                    name = ((String[]) obj.message)[0];
+                    break;
+                case 10:
+                    player.setLocation((float[]) obj.message);
+                    this.messages.put(obj);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public int getId() {
-        return id;
+        return this.player.id;
     }
 }

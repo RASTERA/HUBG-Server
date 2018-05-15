@@ -8,6 +8,7 @@ public class Player implements Serializable{
     float rotation;
     int[] guns = new int[2];
     String name;
+    public int id;
 
     public Player(float x, float y, float rotation) {
         this.x = x;
