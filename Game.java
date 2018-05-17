@@ -127,7 +127,7 @@ public class Game{
 
 
         for (ClientConnection conn : clientList) {
-            currentPlayer = new Player(-10,-10, (float) Math.toRadians(rand.nextFloat()*360));
+            currentPlayer = new Player(rand.nextFloat()*-50, rand.nextFloat()*-50, (float) Math.toRadians(rand.nextFloat()*360));
             conn.setPlayer(currentPlayer);
             conn.setMessageQueue(gameMessage);
             //playerList.add(currentPlayer);

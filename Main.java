@@ -29,7 +29,7 @@ class Server {
     private Game cGame;
     private int counter = 0;
 
-    public Server(int port) throws IOException{
+    public Server(int port) throws IOException {
         clientList = new ArrayList<>();
         messages = new LinkedBlockingQueue<>();
         currentGames = new ArrayList<>();
@@ -44,7 +44,7 @@ class Server {
 
                         System.out.println("connection from" + s.getChannel());
                         ClientConnection player = new ClientConnection(s, messages, counter);
-                        player.write(rah.messageBuilder(0,  counter));
+                        player.write(rah.messageBuilder(0, counter));
 
                         counter++;
 
