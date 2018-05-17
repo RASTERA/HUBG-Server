@@ -31,6 +31,7 @@ public class ClientConnection {
 
                     } catch (Exception e) {
                         e.printStackTrace();
+                        break;
                     }
                 }
             }

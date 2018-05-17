@@ -15,6 +15,35 @@ public class Game{
         clientList = new ArrayList<>();
         gameMessage = new LinkedBlockingQueue<>();
         playerList = new ArrayList<>();
+
+        Thread GameProcessor = new Thread() {
+            public void run() {
+                startGame();
+                while (true) {
+                    try {
+                        while (clientList.size() != 1) {
+                            Message mainMessage = gameMessage.take();
+
+                            System.out.println("Receive location update");
+
+                            System.out.println(clientList);
+
+                            switch (mainMessage.type) {
+                                case 10:
+                                    broadcast(mainMessage);
+                                    break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        GameProcessor.setDaemon(true);
+        GameProcessor.start();
+
     }
 
     public void broadcast(Message message) {
@@ -36,9 +65,23 @@ public class Game{
         return enemyPlayers;
     }
 
-    public void addPlayer(ClientConnection player) {
-        clientList.add(player);
+    public void addPlayer(ClientConnection conn) {
+        clientList.add(conn);
 
+        Player currentPlayer;
+        Random rand = new Random();
+
+        ArrayList<float[]> locations = new ArrayList<>();
+
+        currentPlayer = new Player(-10,-10, (float) Math.toRadians(rand.nextFloat()*360));
+        conn.setPlayer(currentPlayer);
+        conn.setMessageQueue(gameMessage);
+
+        locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
+
+        broadcast(rah.messageBuilder(1, locations));
+
+        /*
         if (clientList.size() == 2) {
             Thread GameProcessor = new Thread() {
                 public void run() {
@@ -65,12 +108,13 @@ public class Game{
 
             GameProcessor.setDaemon(true);
             GameProcessor.start();
-        }
+        }*/
     }
 
     public void startGame() {
         this.Started = true;
 
+        /*
         Player currentPlayer;
         Random rand = new Random();
 
@@ -81,8 +125,9 @@ public class Game{
 
         ///////////////////////////
 
+
         for (ClientConnection conn : clientList) {
-            currentPlayer = new Player(rand.nextFloat()*-50, rand.nextFloat()*-50, (float) Math.toRadians(rand.nextFloat()*360));
+            currentPlayer = new Player(-10,-10, (float) Math.toRadians(rand.nextFloat()*360));
             conn.setPlayer(currentPlayer);
             conn.setMessageQueue(gameMessage);
             //playerList.add(currentPlayer);
@@ -90,6 +135,6 @@ public class Game{
             locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
         }
 
-        broadcast(rah.messageBuilder(1, locations));
+        broadcast(rah.messageBuilder(1, locations)); */
     }
 }
