@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-public class Player implements Serializable{
+public class Player implements Serializable {
     private static final long serialVersionUID = 13412431243L;
 
     float x;
@@ -15,7 +15,7 @@ public class Player implements Serializable{
         this.rotation = rotation;
     }
 
-    public void setLocation (float[] location) {
+    public void setLocation(float[] location) {
         this.x = location[0];
         this.y = location[1];
     }

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Game{
+public class Game {
     private ArrayList<ClientConnection> clientList;
     private LinkedBlockingQueue<Message> gameMessage;
     private ArrayList<Player> playerList;
@@ -31,8 +31,11 @@ public class Game{
         return clientList.size();
     }
 
-    public LinkedList<Player> findPlayersInRange (Message locationUpdate) {
+    public LinkedList<Player> findPlayersInRange(Message locationUpdate) {
         LinkedList<Player> enemyPlayers = new LinkedList<>();
+
+        // need to introduce find code
+
         return enemyPlayers;
     }
 
@@ -82,12 +85,12 @@ public class Game{
         ///////////////////////////
 
         for (ClientConnection conn : clientList) {
-            currentPlayer = new Player(rand.nextFloat()*-50, rand.nextFloat()*-50, (float) Math.toRadians(rand.nextFloat()*360));
+            currentPlayer = new Player(rand.nextFloat() * -50, rand.nextFloat() * -50, (float) Math.toRadians(rand.nextFloat() * 360));
             conn.setPlayer(currentPlayer);
             conn.setMessageQueue(gameMessage);
             //playerList.add(currentPlayer);
 
-            locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
+            locations.add(new float[]{currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
         }
 
         broadcast(rah.messageBuilder(1, locations));

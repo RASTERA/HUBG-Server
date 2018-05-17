@@ -30,14 +30,14 @@ public class ServerTester {
     }
 }
 
-class client extends Thread{
+class client extends Thread {
     ObjectInputStream in;
     ObjectOutputStream out;
     LinkedBlockingQueue<Message> messages;
     Socket player;
 
 
-    public client (Socket client) {
+    public client(Socket client) {
         this.player = client;
 
         this.messages = new LinkedBlockingQueue<>();
@@ -51,7 +51,7 @@ class client extends Thread{
         }
     }
 
-    public void run () {
+    public void run() {
         while (true) {
             try {
                 Message obj = (Message) in.readObject();
