@@ -23,12 +23,10 @@ public class Game{
                 startGame();
                 while (true) {
                     try {
-                        while (clientList.size() != 1) {
+                        while (true) {
                             Message mainMessage = gameMessage.take();
 
                             System.out.println("Receive location update");
-
-                            System.out.println(clientList);
 
                             switch (mainMessage.type) {
                                 case 10:
@@ -75,7 +73,7 @@ public class Game{
 
         ArrayList<float[]> locations = new ArrayList<>();
 
-        currentPlayer = new Player(-10,-10, (float) Math.toRadians(rand.nextFloat()*360));
+        currentPlayer = new Player(0,0, (float) Math.toRadians(rand.nextFloat()*360));
         conn.setPlayer(currentPlayer);
         conn.setMessageQueue(gameMessage);
 
