@@ -21,12 +21,12 @@ public class Game{
                 startGame();
                 while (true) {
                     try {
+
                         while (clientList.size() != 1) {
+
                             Message mainMessage = gameMessage.take();
 
                             System.out.println("Receive location update");
-
-                            System.out.println(clientList);
 
                             switch (mainMessage.type) {
                                 case 10:
