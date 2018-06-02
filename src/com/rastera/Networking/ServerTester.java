@@ -1,3 +1,5 @@
+package com.rastera.Networking;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,10 +33,10 @@ public class ServerTester {
 }
 
 class client extends Thread {
-    ObjectInputStream in;
-    ObjectOutputStream out;
-    LinkedBlockingQueue<Message> messages;
-    Socket player;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
+    private LinkedBlockingQueue<Message> messages;
+    private Socket player;
 
 
     public client(Socket client) {

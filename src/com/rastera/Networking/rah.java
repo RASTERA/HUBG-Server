@@ -1,3 +1,5 @@
+package com.rastera.Networking;
+
 public class rah {
     public static Message messageBuilder(int type, Object message) {
         Message nMessage = new Message();
