@@ -23,6 +23,7 @@ public class Main {
 }
 
 class Server {
+    private Communicator communicator = new Communicator();
     private ArrayList<ClientConnection> clientList;
     private LinkedBlockingQueue<Message> messages;
     private ServerSocket serverSocket;
