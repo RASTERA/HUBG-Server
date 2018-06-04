@@ -67,6 +67,7 @@ public class ClientConnection {
             switch (obj.type) {
                 case 1:
                     name = ((String[]) obj.message)[0];
+                    System.out.println("Set name to " + name);
                     break;
                 case 10:
                     player.setLocation((float[]) obj.message);
