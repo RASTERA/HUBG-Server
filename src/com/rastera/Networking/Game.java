@@ -32,6 +32,18 @@ public class Game{
                                 case 10:
                                     broadcast(mainMessage);
                                     break;
+                                case 11:
+                                    int[] info = (int[]) mainMessage.message;
+
+                                    for (int i = 0 ; i < clientList.size(); i++) {
+                                        if (clientList.get(i).id == info[0]) {
+                                            if (clientList.get(i).player.hit(1)) {
+                                                System.out.println("player " + info[0]+ " is dead");
+                                            }
+                                            clientList.get(i).write(rah.messageBuilder(11, mainMessage.message));
+                                            break;
+                                        }
+                                    }
                             }
                         }
                     } catch (Exception e) {

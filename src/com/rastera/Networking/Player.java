@@ -8,6 +8,7 @@ public class Player implements Serializable {
     float x;
     float y;
     float rotation;
+    private float health = 100;
     int[] guns = new int[2];
     String name;
 
@@ -20,5 +21,15 @@ public class Player implements Serializable {
     public void setLocation(float[] location) {
         this.x = location[0];
         this.y = location[1];
+    }
+
+    public boolean hit(float dmg) {
+        this.health -= dmg;
+
+        if (health <= 0) {
+            return true;
+        }
+
+        return false;
     }
 }

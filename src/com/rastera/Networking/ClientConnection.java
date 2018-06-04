@@ -72,6 +72,9 @@ public class ClientConnection {
                     player.setLocation((float[]) obj.message);
                     this.messages.put(obj);
                     break;
+                case 11:
+                    this.messages.put(obj);
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();
