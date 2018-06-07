@@ -22,8 +22,6 @@ class Communicator {
         }
 
         System.out.println("Token loaded successfully");
-
-        System.out.println(Communicator.getUser("karlz"));
     }
 
     private static final HashMap<RequestDestination, String> baseProductionHashMap = new HashMap<RequestDestination, String>() {
@@ -100,82 +98,97 @@ class Communicator {
 
     // Kill
     public static void updateKills(String killer, String opponent, String weapon) {
-        Long date = Instant.now().toEpochMilli();
+        Thread socketThread = new Thread(() -> {
+            Long date = Instant.now().toEpochMilli();
 
-        try {
-            JSONObject changesKiller = new JSONObject() {
-                {
-                    put("kills", 1);
-                    put("actions", new JSONObject() {
-                            {
-                                put("caption", String.format("You killed %s with %s", opponent, weapon));
-                                put("date", date);
-                                put("type", "KILL");
+            try {
+                JSONObject changesKiller = new JSONObject() {
+                    {
+                        put("kills", 1);
+                        put("actions", new JSONObject() {
+                                {
+                                    put("caption", String.format("You killed %s with %s", opponent, weapon));
+                                    put("date", date);
+                                    put("type", "KILL");
+                                }
                             }
-                        }
-                    );
-                }
-            };
+                        );
+                    }
+                };
 
-            JSONObject changesOpponent = new JSONObject() {
-                {
-                    put("deaths", 1);
-                    put("actions", new JSONObject() {
+                JSONObject changesOpponent = new JSONObject() {
+                    {
+                        put("deaths", 1);
+                        put("actions", new JSONObject() {
                                 {
                                     put("actions", String.format("%s killed you with %s", killer, weapon));
                                     put("date", date);
                                     put("type", "KILLED");
                                 }
                             }
-                    );
-                }
-            };
+                        );
+                    }
+                };
 
-            Communicator.updateUser(changesKiller, killer);
-            Communicator.updateUser(changesOpponent, opponent);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                Communicator.updateUser(changesKiller, killer);
+                Communicator.updateUser(changesOpponent, opponent);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        socketThread.setDaemon(true);
+        socketThread.start();
     }
 
     // Join game
     public static void updateWins(String username) {
-        Long date = Instant.now().toEpochMilli();
+        Thread socketThread = new Thread(() -> {
+            Long date = Instant.now().toEpochMilli();
 
-        try {
-            JSONObject changes = new JSONObject() {
-                {
-                    put("wins", 1);
-                    put("actions", new JSONObject() {
+            try {
+                JSONObject changes = new JSONObject() {
+                    {
+                        put("wins", 1);
+                        put("actions", new JSONObject() {
                                 {
                                     put("actions", String.format("Victory!"));
                                     put("date", date);
                                     put("type", "KILLED");
                                 }
                             }
-                    );
-                }
-            };
+                        );
+                    }
+                };
 
-            Communicator.updateUser(changes, username);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                Communicator.updateUser(changes, username);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        socketThread.setDaemon(true);
+        socketThread.start();
     }
 
     // Join game
     public static void updateMatches(String username) {
-        try {
-            JSONObject changes = new JSONObject() {
-                {
-                    put("matches", 1);
-                }
-            };
+        Thread socketThread = new Thread(() -> {
+            try {
+                JSONObject changes = new JSONObject() {
+                    {
+                        put("matches", 1);
+                    }
+                };
 
-            Communicator.updateUser(changes, username);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                Communicator.updateUser(changes, username);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        socketThread.setDaemon(true);
+        socketThread.start();
     }
 
     public static void updateUser(JSONObject changes, String username) {
