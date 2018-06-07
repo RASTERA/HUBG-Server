@@ -85,7 +85,7 @@ public class Game{
 
         ArrayList<float[]> locations = new ArrayList<>();
 
-        currentPlayer = new Player(0,0, (float) Math.toRadians(rand.nextFloat()*360));
+        currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat()*360));
         conn.setPlayer(currentPlayer);
         conn.setMessageQueue(gameMessage);
 

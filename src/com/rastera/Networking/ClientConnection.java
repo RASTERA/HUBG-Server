@@ -162,13 +162,7 @@ public class ClientConnection {
                     break;
 
                 case -1:
-                    System.out.println("dis boi asking for mai name bruh");
                     this.write(rah.messageBuilder(-1, Main.SERVERNAME));
-                    break;
-
-                case 1:
-                    name = ((String[]) obj.message)[0];
-                    System.out.println("Set name to " + name);
                     break;
 
                 case 10:
