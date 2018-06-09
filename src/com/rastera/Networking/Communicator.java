@@ -10,7 +10,7 @@ import javax.net.ssl.HttpsURLConnection;
 class Communicator {
 
     private static String token;
-    private static final boolean developmentMode = true;
+    private static final boolean developmentMode = !true;
 
     public Communicator() {
         try {

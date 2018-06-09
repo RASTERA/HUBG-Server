@@ -77,6 +77,10 @@ public class Game{
         return enemyPlayers;
     }
 
+    public void removePlayer(ClientConnection conn) {
+        clientList.remove(conn);
+    }
+
     public void addPlayer(ClientConnection conn) {
         clientList.add(conn);
 

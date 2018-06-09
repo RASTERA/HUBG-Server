@@ -38,10 +38,17 @@ public class ClientConnection {
                 while (true) {
                     try {
                         Message obj = (Message) in.readObject();
+
+                        if (obj.type == 1000) {
+                            terminate();
+                            break;
+                        }
+
                         MessageProcessor(obj);
 
                     } catch (Exception e) {
                         e.printStackTrace();
+                        terminate();
                         break;
                     }
                 }
@@ -102,7 +109,13 @@ public class ClientConnection {
     }
 
     public void terminate() {
-        System.out.println("Terminated");
+        System.out.println("Terminated " + this.name);
+
+        if (clientList.contains(this)) {
+            clientList.remove(this);
+            cGame.removePlayer(this);
+            counter--;
+        }
 
         try {
             this.read.stop();
@@ -127,6 +140,9 @@ public class ClientConnection {
                         for (ClientConnection conn : clientList) {
                             if (conn.name.equals(response.getString("username"))) {
                                 this.write(rah.messageBuilder(-2, "Error: You are already in game"));
+
+                                conn.write(rah.messageBuilder(-10, "Ping"));
+
                                 terminate();
                                 break;
                             }
