@@ -192,6 +192,10 @@ public class ClientConnection {
                     this.messages.put(obj);
                     break;
 
+                case 14: // Get health
+                    this.write(rah.messageBuilder(14, this.player.health));
+                    break;
+
             }
         } catch (Exception e) {
             e.printStackTrace();

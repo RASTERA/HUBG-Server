@@ -8,7 +8,7 @@ public class Player implements Serializable {
     float x;
     float y;
     float rotation;
-    private float health = 100;
+    float health = 100;
     int[] guns = new int[2];
     String name;
 

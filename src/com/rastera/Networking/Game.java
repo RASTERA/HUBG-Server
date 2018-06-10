@@ -1,5 +1,7 @@
 package com.rastera.Networking;
 
+import org.json.JSONObject;
+
 import java.net.ServerSocket;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -35,17 +37,26 @@ public class Game{
                                     broadcast(mainMessage);
                                     break;
                                 case 11:
-                                    int[] info = (int[]) mainMessage.message;
+                                    JSONObject info = new JSONObject((String) mainMessage.message);
 
-                                    for (int i = 0 ; i < clientList.size(); i++) {
-                                        if (clientList.get(i).id == info[0]) {
-                                            if (playerList.get(clientList.get(i).name).hit(1)) {
-                                                System.out.println("player " + info[0]+ " is dead");
-                                            }
-                                            clientList.get(i).write(rah.messageBuilder(11, mainMessage.message));
-                                            break;
+                                    try {
+                                        ClientConnection victimConnection = getConnFromID(info.getInt("enemy"));
+
+                                        // Null = shoot at air
+                                        if (victimConnection != null && playerList.get(victimConnection.name).hit(1)) {
+                                            killPlayer(victimConnection.name, getConnFromID(info.getInt("attacker")).name, info.getString("weapon"));
+                                            System.out.println("player " + victimConnection.name + " is dead");
                                         }
+
+                                        //victimConnection.write(rah.messageBuilder(11, mainMessage.message));
+
+                                        broadcast(rah.messageBuilder(11, mainMessage.message));
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
+
+                                    break;
                             }
                         }
                     } catch (Exception e) {
@@ -58,6 +69,26 @@ public class Game{
         GameProcessor.setDaemon(true);
         GameProcessor.start();
 
+    }
+
+    public ClientConnection getConnFromID(int id) {
+        for (ClientConnection conn : clientList) {
+            if (conn.id == id) {
+                return conn;
+            }
+        }
+
+        return null;
+    }
+
+    public ClientConnection getConnFromUsername(String username) {
+        for (ClientConnection conn : clientList) {
+            if (conn.name == username) {
+                return conn;
+            }
+        }
+
+        return null;
     }
 
     public void broadcast(Message message) {
@@ -87,7 +118,7 @@ public class Game{
         for (ClientConnection conn : clientList) {
             if (conn.player == player) {
                 conn.write(rah.messageBuilder(-3, String.format("You were killed by %s with %s.", killer, weapon)));
-                conn.terminate();
+                //conn.terminate();
                 playerConnected = true;
                 break;
             }
@@ -123,18 +154,23 @@ public class Game{
         if (playerList.containsKey(conn.name)) {
             currentPlayer = playerList.get(conn.name);
         } else {
-            currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+            //currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+            currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
 
             playerList.put(conn.name, currentPlayer);
         }
 
-
         conn.setPlayer(currentPlayer);
         conn.setMessageQueue(gameMessage);
 
-        locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
+        for (String username : playerList.keySet()) {
+            Player user = playerList.get(username);
+
+            locations.add(new float[] {user.x, user.y, user.rotation, getConnFromUsername(username).id});
+        }
 
         broadcast(rah.messageBuilder(1, locations));
+
         broadcast(rah.messageBuilder(13, playerList.size()));
 
         if (deadQueue.contains(conn.name)) {
@@ -142,6 +178,9 @@ public class Game{
 
             conn.write(rah.messageBuilder(-3, "You were killed in the last round."));
         }
+
+        //killPlayer("karlz", "lol", "lol");
+
 
         /*
         if (clientList.size() == 2) {
