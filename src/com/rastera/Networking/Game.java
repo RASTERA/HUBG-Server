@@ -122,9 +122,9 @@ public class Game{
 
         Communicator.updateKills(killer, targetName, weapon);
 
-        broadcast(rah.messageBuilder(15, targetName.hashCode()));
-        broadcast(rah.messageBuilder(13, playerList.size()));
-        broadcast(rah.messageBuilder(12, String.format("%s was killed by %s with %s.", targetName, killer, weapon)));
+        broadcast(rah.messageBuilder(15, targetName.hashCode())); // Remove player
+        broadcast(rah.messageBuilder(13, playerList.size())); // Update player count
+        broadcast(rah.messageBuilder(12, String.format("%s was killed by %s with %s.", targetName, killer, weapon))); // Broadcast death
 
         playerList.remove(targetName);
     }
@@ -161,9 +161,8 @@ public class Game{
             locations.add(new long[] {(long) (user.x * 1000f), (long) (user.y * 1000f), (long) (user.rotation * 1000f), username.hashCode()});
         }
 
-        broadcast(rah.messageBuilder(1, locations));
-
-        broadcast(rah.messageBuilder(13, playerList.size()));
+        broadcast(rah.messageBuilder(1, locations)); // Announce new user
+        broadcast(rah.messageBuilder(13, playerList.size())); // Update player count
 
         if (deadQueue.contains(conn.name)) {
             deadQueue.remove(conn.name);
