@@ -40,12 +40,13 @@ public class Game{
                                     JSONObject info = new JSONObject((String) mainMessage.message);
 
                                     try {
-                                        ClientConnection victimConnection = getConnFromID(info.getInt("enemy"));
+                                        Player victimPlayer = getPlayerFromID(info.getInt("enemy"));
+                                        Player attackerPlayer = getPlayerFromID(info.getInt("attacker"));
 
                                         // Null = shoot at air
-                                        if (victimConnection != null && playerList.get(victimConnection.name).hit(1)) {
-                                            killPlayer(victimConnection.name, getConnFromID(info.getInt("attacker")).name, info.getString("weapon"));
-                                            System.out.println("player " + victimConnection.name + " is dead");
+                                        if (victimPlayer != null && victimPlayer.hit(1)) {
+                                            killPlayer(victimPlayer.name, attackerPlayer.name, info.getString("weapon"));
+                                            System.out.println("player " + victimPlayer.name + " is dead");
                                         }
 
                                         //victimConnection.write(rah.messageBuilder(11, mainMessage.message));
@@ -71,20 +72,10 @@ public class Game{
 
     }
 
-    public ClientConnection getConnFromID(int id) {
-        for (ClientConnection conn : clientList) {
-            if (conn.id == id) {
-                return conn;
-            }
-        }
-
-        return null;
-    }
-
-    public ClientConnection getConnFromUsername(String username) {
-        for (ClientConnection conn : clientList) {
-            if (conn.name == username) {
-                return conn;
+    public Player getPlayerFromID(int id) {
+        for (String name : playerList.keySet()) {
+            if (name.hashCode() == id) {
+                return playerList.get(name);
             }
         }
 
@@ -131,6 +122,7 @@ public class Game{
 
         Communicator.updateKills(killer, targetName, weapon);
 
+        broadcast(rah.messageBuilder(15, targetName.hashCode()));
         broadcast(rah.messageBuilder(13, playerList.size()));
         broadcast(rah.messageBuilder(12, String.format("%s was killed by %s with %s.", targetName, killer, weapon)));
 
@@ -144,7 +136,7 @@ public class Game{
     public void addPlayer(ClientConnection conn) {
         clientList.add(conn);
 
-        ArrayList<float[]> locations = new ArrayList<>();
+        ArrayList<long[]> locations = new ArrayList<>();
 
         System.out.println("ADDED PLAYER " + conn.name);
 
@@ -166,7 +158,7 @@ public class Game{
         for (String username : playerList.keySet()) {
             Player user = playerList.get(username);
 
-            locations.add(new float[] {user.x, user.y, user.rotation, getConnFromUsername(username).id});
+            locations.add(new long[] {(long) (user.x * 1000f), (long) (user.y * 1000f), (long) (user.rotation * 1000f), username.hashCode()});
         }
 
         broadcast(rah.messageBuilder(1, locations));

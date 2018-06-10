@@ -19,9 +19,9 @@ public class Player implements Serializable {
         this.name = name;
     }
 
-    public void setLocation(float[] location) {
-        this.x = location[0];
-        this.y = location[1];
+    public void setLocation(long[] location) {
+        this.x = (float) (location[0] / 1000f);
+        this.y = (float) (location[1] / 1000f);
     }
 
     public boolean hit(float dmg) {

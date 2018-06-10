@@ -21,7 +21,6 @@ public class ClientConnection {
     private Thread read;
 
     private static LinkedBlockingQueue<ClientConnection> waiting = new LinkedBlockingQueue<>();;
-    private static int counter = 0;
     private static ArrayList<ClientConnection> clientList = new ArrayList<>();
     private static Game cGame;
 
@@ -83,10 +82,8 @@ public class ClientConnection {
 
             System.out.println(player.name + " accepted");
 
-            player.id = counter;
-            player.write(rah.messageBuilder(0, counter));
-
-            counter++;
+            player.id = player.name.hashCode();
+            player.write(rah.messageBuilder(0, player.id));
 
             clientList.add(player);
             waiting.add(player);
@@ -184,7 +181,7 @@ public class ClientConnection {
                     break;
 
                 case 10:
-                    this.player.setLocation((float[]) obj.message);
+                    this.player.setLocation((long[]) obj.message);
                     this.messages.put(obj);
                     break;
 
