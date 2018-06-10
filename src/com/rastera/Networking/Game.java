@@ -1,22 +1,24 @@
 package com.rastera.Networking;
 
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Game{
     private ArrayList<ClientConnection> clientList;
     private LinkedBlockingQueue<Message> gameMessage;
-    private ArrayList<Player> playerList;
+    private ArrayList<String> deadQueue;
+    public HashMap<String, Player> playerList ;
+
     private ServerSocket serverSocket;
+
     private boolean Started = false;
 
     public Game() {
         clientList = new ArrayList<>();
         gameMessage = new LinkedBlockingQueue<>();
-        playerList = new ArrayList<>();
+        playerList= new HashMap<>();
+        deadQueue = new ArrayList<>();
 
         Thread GameProcessor = new Thread() {
             public void run() {
@@ -37,7 +39,7 @@ public class Game{
 
                                     for (int i = 0 ; i < clientList.size(); i++) {
                                         if (clientList.get(i).id == info[0]) {
-                                            if (clientList.get(i).player.hit(1)) {
+                                            if (playerList.get(clientList.get(i).name).hit(1)) {
                                                 System.out.println("player " + info[0]+ " is dead");
                                             }
                                             clientList.get(i).write(rah.messageBuilder(11, mainMessage.message));
@@ -77,6 +79,33 @@ public class Game{
         return enemyPlayers;
     }
 
+    public void killPlayer(String targetName, String killer, String weapon) {
+        Player player = playerList.get(targetName);
+
+        boolean playerConnected = false;
+
+        for (ClientConnection conn : clientList) {
+            if (conn.player == player) {
+                conn.write(rah.messageBuilder(-3, String.format("You were killed by %s with %s.", killer, weapon)));
+                conn.terminate();
+                playerConnected = true;
+                break;
+            }
+        }
+
+        if (!playerConnected) {
+            System.out.println("Added to death queue");
+            deadQueue.add(targetName);
+        }
+
+        Communicator.updateKills(killer, targetName, weapon);
+
+        broadcast(rah.messageBuilder(13, playerList.size()));
+        broadcast(rah.messageBuilder(12, String.format("%s was killed by %s with %s.", targetName, killer, weapon)));
+
+        playerList.remove(targetName);
+    }
+
     public void removePlayer(ClientConnection conn) {
         clientList.remove(conn);
     }
@@ -84,18 +113,35 @@ public class Game{
     public void addPlayer(ClientConnection conn) {
         clientList.add(conn);
 
+        ArrayList<float[]> locations = new ArrayList<>();
+
+        System.out.println("ADDED PLAYER " + conn.name);
+
         Player currentPlayer;
         Random rand = new Random();
 
-        ArrayList<float[]> locations = new ArrayList<>();
+        if (playerList.containsKey(conn.name)) {
+            currentPlayer = playerList.get(conn.name);
+        } else {
+            currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
 
-        currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat()*360));
+            playerList.put(conn.name, currentPlayer);
+        }
+
+
         conn.setPlayer(currentPlayer);
         conn.setMessageQueue(gameMessage);
 
         locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
 
         broadcast(rah.messageBuilder(1, locations));
+        broadcast(rah.messageBuilder(13, playerList.size()));
+
+        if (deadQueue.contains(conn.name)) {
+            deadQueue.remove(conn.name);
+
+            conn.write(rah.messageBuilder(-3, "You were killed in the last round."));
+        }
 
         /*
         if (clientList.size() == 2) {

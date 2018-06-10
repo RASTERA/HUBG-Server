@@ -121,7 +121,7 @@ class Communicator {
                         put("deaths", 1);
                         put("actions", new JSONObject() {
                                 {
-                                    put("actions", String.format("%s killed you with %s", killer, weapon));
+                                    put("caption", String.format("%s killed you with %s", killer, weapon));
                                     put("date", date);
                                     put("type", "KILLED");
                                 }
@@ -152,7 +152,7 @@ class Communicator {
                         put("wins", 1);
                         put("actions", new JSONObject() {
                                 {
-                                    put("actions", String.format("Victory!"));
+                                    put("caption", String.format("Victory!"));
                                     put("date", date);
                                     put("type", "KILLED");
                                 }

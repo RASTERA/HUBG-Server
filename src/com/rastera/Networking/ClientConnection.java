@@ -15,8 +15,8 @@ public class ClientConnection {
     public ObjectOutputStream out;
     public LinkedBlockingQueue<Message> messages;
     private Socket socket;
-    public Player player;
     public int id;
+    public Player player;
     public JSONObject user;
     private Thread read;
 
@@ -24,7 +24,6 @@ public class ClientConnection {
     private static int counter = 0;
     private static ArrayList<ClientConnection> clientList = new ArrayList<>();
     private static Game cGame;
-
 
     public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages) throws IOException {
         this.socket = socket;
@@ -65,7 +64,6 @@ public class ClientConnection {
 
     public void setPlayer(Player player) {
         this.player = player;
-        player.name = this.name;
     }
 
     public void write(Object obj) {
@@ -79,10 +77,13 @@ public class ClientConnection {
         }
     }
 
-    public static int acceptPlayer(ClientConnection player) {
+    public static void acceptPlayer(ClientConnection player) {
         try {
+            Communicator.updateMatches(player.name);
+
             System.out.println(player.name + " accepted");
 
+            player.id = counter;
             player.write(rah.messageBuilder(0, counter));
 
             counter++;
@@ -90,22 +91,24 @@ public class ClientConnection {
             clientList.add(player);
             waiting.add(player);
 
-            if (cGame != null && cGame.size() != 100) {
+            if (cGame != null) {
                 cGame.addPlayer(player);
             } else {
-                if (!(!true != false)) {
-                    cGame = new Game();
 
-                    while (!waiting.isEmpty()) {
-                        cGame.addPlayer(waiting.take());
-                    }
+                cGame = new Game();
+
+                while (!waiting.isEmpty()) {
+                    cGame.addPlayer(waiting.take());
                 }
+
             }
+
         } catch (Exception e) {
             e.printStackTrace();
+
         }
 
-        return counter;
+
     }
 
     public void terminate() {
@@ -113,8 +116,9 @@ public class ClientConnection {
 
         if (clientList.contains(this)) {
             clientList.remove(this);
+            waiting.remove(this);
             cGame.removePlayer(this);
-            counter--;
+            //counter--;
         }
 
         try {
@@ -141,8 +145,6 @@ public class ClientConnection {
                             if (conn.name.equals(response.getString("username"))) {
                                 this.write(rah.messageBuilder(-2, "Error: You are already in game"));
 
-                                conn.write(rah.messageBuilder(-10, "Ping"));
-
                                 terminate();
                                 break;
                             }
@@ -161,7 +163,7 @@ public class ClientConnection {
                             this.user = userData;
 
                             this.write(rah.messageBuilder(-2, "success"));
-                            this.id = acceptPlayer(this);
+                            acceptPlayer(this);
 
                         } else {
                             this.write(rah.messageBuilder(-2, "Error: Rejected by HUBG Authentication Server"));
@@ -182,13 +184,14 @@ public class ClientConnection {
                     break;
 
                 case 10:
-                    player.setLocation((float[]) obj.message);
+                    this.player.setLocation((float[]) obj.message);
                     this.messages.put(obj);
                     break;
 
                 case 11:
                     this.messages.put(obj);
                     break;
+
             }
         } catch (Exception e) {
             e.printStackTrace();

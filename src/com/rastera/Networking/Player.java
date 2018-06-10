@@ -12,10 +12,11 @@ public class Player implements Serializable {
     int[] guns = new int[2];
     String name;
 
-    public Player(float x, float y, float rotation) {
+    public Player(float x, float y, float rotation, String name) {
         this.x = x;
         this.y = y;
         this.rotation = rotation;
+        this.name = name;
     }
 
     public void setLocation(float[] location) {
