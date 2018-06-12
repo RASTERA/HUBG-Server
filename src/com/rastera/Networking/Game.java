@@ -3,6 +3,7 @@ package com.rastera.Networking;
 import jdk.nashorn.internal.runtime.arrays.ArrayLikeIterator;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.util.*;
@@ -13,7 +14,8 @@ public class Game{
     private LinkedBlockingQueue<Message> gameMessage;
     private ArrayList<String> deadQueue;
     public HashMap<String, Player> playerList ;
-    private HashMap<Integer, ArrayList<float[]>> items;
+    private HashMap<Long, ArrayList<long[]>> masterItemList;
+    private int maxItemID = -1000;
 
     private ServerSocket serverSocket;
 
@@ -25,6 +27,21 @@ public class Game{
         playerList= new HashMap<>();
         deadQueue = new ArrayList<>();
 
+        try {
+            Scanner input = new Scanner(new File("assets/itemData.txt"));
+            int id;
+
+            while (input.hasNext()) {
+                id = Integer.parseInt(input.nextLine().split(",")[0]);
+                masterItemList.put((long) id, new ArrayList<long[]>());
+
+                maxItemID = Math.min(maxItemID, id);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
         Thread GameProcessor = new Thread() {
             public void run() {
                 startGame();
@@ -32,8 +49,6 @@ public class Game{
                     try {
                         while (true) {
                             Message mainMessage = gameMessage.take();
-
-                            System.out.println("Receive location update");
 
                             switch (mainMessage.type) {
                                 case 10:
@@ -75,8 +90,16 @@ public class Game{
 
     }
 
-    public boolean takeItem(float[] item) {
-        return true;
+    public boolean takeItem(long[] item) {
+        ArrayList<long[]> itemarray = masterItemList.get((long) item[2]);
+
+        for (int i = 0; i < itemarray.size(); i++) {
+            if (itemarray.get(i)[0] == item[0] && itemarray.get(i)[1] == item[1]) {
+                itemarray.remove(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     public Player getPlayerFromID(int id) {
@@ -175,6 +198,8 @@ public class Game{
             deadQueue.remove(conn.name);
 
             conn.write(rah.messageBuilder(-3, "You were killed in the last round."));
+        } else {
+            conn.write(rah.messageBuilder(19, masterItemList));
         }
 
         //killPlayer("karlz", "lol", "lol");
@@ -212,6 +237,11 @@ public class Game{
 
     public void startGame() {
         this.Started = true;
+        Random rand = new Random();
+
+        for (int i = 0; i < 1000; i++) {
+            masterItemList.get(rand.nextInt(maxItemID+1000) - 1000).add(new long[] {(long) rand.nextDouble() * 10000000, (long) rand.nextDouble() * 10000000});
+        }
 
         /*
         Player currentPlayer;
