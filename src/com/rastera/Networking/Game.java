@@ -1,7 +1,9 @@
 package com.rastera.Networking;
 
+import jdk.nashorn.internal.runtime.arrays.ArrayLikeIterator;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -11,6 +13,7 @@ public class Game{
     private LinkedBlockingQueue<Message> gameMessage;
     private ArrayList<String> deadQueue;
     public HashMap<String, Player> playerList ;
+    private HashMap<Integer, ArrayList<float[]>> items;
 
     private ServerSocket serverSocket;
 
@@ -70,6 +73,10 @@ public class Game{
         GameProcessor.setDaemon(true);
         GameProcessor.start();
 
+    }
+
+    public boolean takeItem(float[] item) {
+        return true;
     }
 
     public Player getPlayerFromID(int id) {

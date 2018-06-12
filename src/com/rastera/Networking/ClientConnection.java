@@ -192,6 +192,8 @@ public class ClientConnection {
                 case 14: // Get health
                     this.write(rah.messageBuilder(14, this.player.health));
                     break;
+                case 20:
+                    this.write(rah.messageBuilder(20, cGame.takeItem((float[]) obj.message)));
 
             }
         } catch (Exception e) {
