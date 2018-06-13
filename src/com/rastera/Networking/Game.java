@@ -1,20 +1,20 @@
 package com.rastera.Networking;
 
-import jdk.nashorn.internal.runtime.arrays.ArrayLikeIterator;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Game{
     private ArrayList<ClientConnection> clientList;
     private LinkedBlockingQueue<Message> gameMessage;
     private ArrayList<String> deadQueue;
-    public HashMap<String, Player> playerList ;
-    private HashMap<Long, ArrayList<long[]>> masterItemList;
+    public ConcurrentHashMap<String, Player> playerList ;
+    private HashMap<Long, ArrayList<long[]>> masterItemList = new HashMap<>();
     private int maxItemID = -1000;
 
     private ServerSocket serverSocket;
@@ -24,7 +24,7 @@ public class Game{
     public Game() {
         clientList = new ArrayList<>();
         gameMessage = new LinkedBlockingQueue<>();
-        playerList= new HashMap<>();
+        playerList= new ConcurrentHashMap<>();
         deadQueue = new ArrayList<>();
 
         try {
@@ -33,6 +33,7 @@ public class Game{
 
             while (input.hasNext()) {
                 id = Integer.parseInt(input.nextLine().split(",")[0]);
+                System.out.println(id);
                 masterItemList.put((long) id, new ArrayList<long[]>());
 
                 maxItemID = Math.min(maxItemID, id);
@@ -96,6 +97,7 @@ public class Game{
         for (int i = 0; i < itemarray.size(); i++) {
             if (itemarray.get(i)[0] == item[0] && itemarray.get(i)[1] == item[1]) {
                 itemarray.remove(i);
+                broadcast(rah.messageBuilder(21, item));
                 return true;
             }
         }
@@ -239,8 +241,10 @@ public class Game{
         this.Started = true;
         Random rand = new Random();
 
+        System.out.println(rand.nextInt(1));
+
         for (int i = 0; i < 1000; i++) {
-            masterItemList.get(rand.nextInt(maxItemID+1000) - 1000).add(new long[] {(long) rand.nextDouble() * 10000000, (long) rand.nextDouble() * 10000000});
+            masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(new long[] {(long) (rand.nextDouble() * 10000000), (long) (rand.nextDouble() * 10000000)});
         }
 
         /*
