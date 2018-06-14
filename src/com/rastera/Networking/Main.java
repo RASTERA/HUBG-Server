@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            Server gameServer = new Server(25565);
+            Server gameServer = new Server(8080);
 
             Scanner input = new Scanner(System.in);
 

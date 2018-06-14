@@ -14,7 +14,7 @@ public class Game{
     private LinkedBlockingQueue<Message> gameMessage;
     private ArrayList<String> deadQueue;
     public ConcurrentHashMap<String, Player> playerList ;
-    private HashMap<Long, ArrayList<long[]>> masterItemList = new HashMap<>();
+    private ConcurrentHashMap<Long, ArrayList<long[]>> masterItemList = new ConcurrentHashMap<>();
     private int maxItemID = -1000;
 
     private ServerSocket serverSocket;
