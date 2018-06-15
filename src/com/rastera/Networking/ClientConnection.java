@@ -234,12 +234,17 @@ class ClientConnection {
                     this.messages.put(obj);
                     break;
 
-                case 14: // Get health
+                case 14: // Set/Get health
+
+                    if (obj.message != null) {
+                        this.player.health = (float) obj.message;
+                    }
+
                     this.write(MessageBuilder.messageBuilder(14, this.player.health));
 
                     break;
 
-                case 16: // Set energy
+                case 16: // Set/Get energy
 
                     if (obj.message != null) {
                         this.player.energy = (float) obj.message;
