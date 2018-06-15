@@ -111,6 +111,13 @@ public class Game{
                                 }
 
                                 break;
+                            case 22:
+                                long[] data = (long[]) mainMessage.message;
+
+                                masterItemList.get(data[0]).add(new long[]{data[1], data[2]});
+
+                                broadcast(mainMessage);
+                                break;
                             case 31:
                                 broadcast(mainMessage);
                                 break;
