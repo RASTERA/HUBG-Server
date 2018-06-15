@@ -87,7 +87,6 @@ class ClientConnection {
     // Writes to client
     public void write(Message obj) {
         try {
-            System.out.println(obj.type);
             writeQueue.put(obj);
         } catch (Exception e) {
             e.printStackTrace();
@@ -168,6 +167,7 @@ class ClientConnection {
     // Process incoming messages
     private void MessageProcessor(Message obj) {
         try {
+            System.out.println(obj.type);
             switch (obj.type) {
                 case -2: // Authentication request
 

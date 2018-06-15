@@ -318,6 +318,7 @@ public class Game{
             conn.write(MessageBuilder.messageBuilder(-3, "You were killed in the last round."));
         } else {
             conn.write(MessageBuilder.messageBuilder(19, masterItemList));
+            System.out.println(Arrays.toString(currentPlayer.guns));
             conn.write(MessageBuilder.messageBuilder(30, currentPlayer.guns));
             for (String username : playerList.keySet()) {
                 conn.write(MessageBuilder.messageBuilder(31, new int []{playerList.get(username).gun, username.hashCode()}));
