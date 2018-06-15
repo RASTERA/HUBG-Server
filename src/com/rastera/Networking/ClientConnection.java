@@ -25,10 +25,12 @@ class ClientConnection {
     private LinkedBlockingQueue<Message> messages;
     private final Socket socket;
     private Thread read;
+    private Thread writer;
 
     private static final LinkedBlockingQueue<ClientConnection> waiting = new LinkedBlockingQueue<>();
     private static final ArrayList<ClientConnection> clientList = new ArrayList<>();
     private static Game cGame;
+    private LinkedBlockingQueue<Message> writeQueue = new LinkedBlockingQueue<>();
 
     // General information
     public String name;
@@ -43,6 +45,7 @@ class ClientConnection {
         // Object streams
         out = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
+        messageWriter();
 
         // Reader thread
         read = new Thread() {
@@ -82,13 +85,29 @@ class ClientConnection {
     }
 
     // Writes to client
-    public void write(Object obj) {
+    public void write(Message obj) {
         try {
-            out.writeObject(obj);
-        } catch (IOException e) {
+            System.out.println(obj.type);
+            writeQueue.put(obj);
+        } catch (Exception e) {
             e.printStackTrace();
-            terminate();
         }
+    }
+
+    public void messageWriter () {
+        writer = new Thread(() -> {
+            while (true) {
+                try {
+                    Message mainMessage = writeQueue.take();
+                    System.out.println(mainMessage.type);
+                    out.writeObject(mainMessage);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //this.terminate();
+                }
+            }
+        });
+
     }
 
     // Accept player to game
