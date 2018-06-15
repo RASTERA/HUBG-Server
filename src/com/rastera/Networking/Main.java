@@ -15,6 +15,8 @@ import java.io.FileReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -22,9 +24,41 @@ class Main {
 
     // Server name for authentication purposes
     public static String SERVERNAME;
+    public static ArrayList<long[]> validPositions = new ArrayList<>();
+
+    public static long[] randomPosition() {
+        return validPositions.get((int) (Math.random() * validPositions.size()));
+    }
 
     public static void main(String[] args) {
         try {
+
+            BufferedReader mapReader = new BufferedReader(new FileReader(new File("assets/map_display.csv")));
+
+            String rawLine;
+            String[] line;
+            int y = -1;
+
+            while ((rawLine = mapReader.readLine()) != null) {
+                line = rawLine.split(",");
+
+                if (y == -1) {
+                    y = line.length;
+                } else {
+                    y--;
+                }
+
+                for (int x = 0; x < line.length; x++) {
+
+                    if (line[x].equals("204") || line[x].equals("4")) {
+                        validPositions.add(new long[]{(long) x * 10, (long) y * 10});
+                    }
+                }
+            }
+
+            System.out.println("Loaded map");
+            System.out.println(validPositions.size());
+
             Server gameServer = new Server();
 
             Scanner input = new Scanner(System.in);

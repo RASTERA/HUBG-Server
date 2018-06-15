@@ -224,7 +224,7 @@ class ClientConnection {
                         this.player.energy = (float) obj.message;
                     }
 
-                    this.write(MessageBuilder.messageBuilder(16, this.player.energy));
+                    this.write(MessageBuilder.messageBuilder(16, (Float) this.player.energy));
                     break;
 
                 case 20:

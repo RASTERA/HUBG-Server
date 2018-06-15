@@ -155,8 +155,8 @@ public class Game{
             for (ClientConnection conn : clientList) {
                 if (conn.name.equals(name)) {
                     System.out.println("Communicated " + name + " H:" + player.health + " E:" + player.energy);
-                    conn.write(MessageBuilder.messageBuilder(14, player.health));
-                    conn.write(MessageBuilder.messageBuilder(16, player.energy));
+                    conn.write(MessageBuilder.messageBuilder(14, (Float) player.health));
+                    conn.write(MessageBuilder.messageBuilder(16, (Float) player.energy));
                     break;
                 }
             }
@@ -241,6 +241,7 @@ public class Game{
 
         Player currentPlayer;
         Random rand = new Random();
+        long[] position;
 
         if (playerList.containsKey(conn.name)) {
             currentPlayer = playerList.get(conn.name);
@@ -251,8 +252,10 @@ public class Game{
             if (Communicator.developmentMode) {
                 currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
             } else {
+                position = Main.randomPosition();
+
                 //currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
-                currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+                currentPlayer = new Player(position[0], position[1], (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
             }
 
             playerList.put(conn.name, currentPlayer);
@@ -314,7 +317,7 @@ public class Game{
         System.out.println(maxItemID);
 
         for (int i = 0; i < 10000; i++) {
-            masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(new long[] {(long) (rand.nextDouble() * 10000000), (long) (rand.nextDouble() * 10000000)});
+            masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(Main.randomPosition());
         }
 
         masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(new long[] {1000, 1000});
