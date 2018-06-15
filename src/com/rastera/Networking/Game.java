@@ -101,6 +101,9 @@ public class Game{
                                     // Null = shoot at air
                                     if (victimPlayer != null && victimPlayer.hit(damage.get(info.getInt("weapon")))) {
                                         killPlayer(victimPlayer.name, attackerPlayer.name, name.get(info.getInt("weapon")));
+
+
+
                                         System.out.println("player " + victimPlayer.name + " is dead");
                                     }
 
@@ -205,6 +208,19 @@ public class Game{
             if (conn.player == player) {
                 conn.write(MessageBuilder.messageBuilder(-3, String.format("You were killed by %s with %s.", killer, weapon)));
                 playerConnected = true;
+
+                player.ammo += player.gunAmmo[0] + player.gunammo[1];
+
+                for (int i = player.ammo; player.ammo > 30; i -= 30) {
+                    gameMessage.add(MessageBuilder.messageBuilder(22, new long[] {-1004, (long) (player.x * 1000), (long) (player.y * 1000)}));
+                }
+
+                if (player.guns[0] != 0) {
+                    gameMessage.add(MessageBuilder.messageBuilder(22, new long[] {player.guns[0], (long) (player.x * 1000), (long) (player.y * 1000)}));
+                }
+                if (player.guns[1] != 0){
+                    gameMessage.add(MessageBuilder.messageBuilder(22, new long[] {player.guns[1], (long) (player.x * 1000), (long) (player.y * 1000)}));
+                }
                 break;
             }
         }
