@@ -99,7 +99,6 @@ class ClientConnection {
             while (true) {
                 try {
                     Message mainMessage = writeQueue.take();
-                    System.out.println(mainMessage.type);
                     out.writeObject(mainMessage);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -107,6 +106,9 @@ class ClientConnection {
                 }
             }
         });
+
+        writer.setDaemon(true);
+        writer.start();
 
     }
 

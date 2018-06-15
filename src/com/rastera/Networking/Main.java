@@ -65,6 +65,8 @@ class Main {
 
             String temp = input.next();
 
+            System.gc();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
