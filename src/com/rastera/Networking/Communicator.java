@@ -18,7 +18,7 @@ import javax.net.ssl.HttpsURLConnection;
 class Communicator {
 
     private static String token;
-    public static final boolean developmentMode = true;
+    public static final boolean developmentMode = !true;
 
     // Establishes API key
     public Communicator() {

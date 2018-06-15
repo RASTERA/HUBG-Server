@@ -17,8 +17,9 @@ public class Player implements Serializable {
     final float rotation;
     float health = 100;
     float energy = 100;
-    int[] guns = new int[2];
+    int[] guns = {0, 0};
     final String name;
+    int gun = 0;
 
     public Player(float x, float y, float rotation, String name) {
         this.x = x;
@@ -34,6 +35,7 @@ public class Player implements Serializable {
 
     public boolean hit(float dmg) {
         this.health -= dmg;
+        System.out.println(this.health);
 
         return health <= 0;
 

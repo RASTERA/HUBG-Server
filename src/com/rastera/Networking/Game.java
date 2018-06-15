@@ -23,6 +23,8 @@ public class Game{
     public ConcurrentHashMap<String, Player> playerList ;
     private ConcurrentHashMap<Long, ArrayList<long[]>> masterItemList = new ConcurrentHashMap<>();
     private int maxItemID = -1000;
+    private ConcurrentHashMap<Integer, Integer> damage = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Integer, String> name = new ConcurrentHashMap<>();
 
     public Game() {
         clientList = new ArrayList<>();
@@ -33,14 +35,29 @@ public class Game{
         try {
             Scanner input = new Scanner(new File("assets/itemData.txt"));
             int id;
+            String[] data;
+
+            input.nextLine();
 
             while (input.hasNext()) {
-                id = Integer.parseInt(input.nextLine().split(",")[0]);
-                System.out.println(id);
+                data = input.nextLine().split(",");
+                id = Integer.parseInt(data[0]);
+                name.put(id, data[1]);
                 masterItemList.put((long) id, new ArrayList<long[]>());
 
                 maxItemID = Math.min(maxItemID, id);
             }
+
+            input = new Scanner(new File("assets/weaponData.txt"));
+
+            input.nextLine();
+
+            while (input.hasNext()) {
+                data = input.nextLine().split(",");
+                id = Integer.parseInt(data[0]);
+                damage.put(id, Integer.parseInt(data[5]));
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -67,7 +84,6 @@ public class Game{
                     while (true) {
                         Message mainMessage = gameMessage.take();
 
-                        System.out.println("Receive location update");
 
                         switch (mainMessage.type) {
                             case 10: // Location update
@@ -81,8 +97,8 @@ public class Game{
                                     Player attackerPlayer = getPlayerFromID(info.getInt("attacker"));
 
                                     // Null = shoot at air
-                                    if (victimPlayer != null && victimPlayer.hit(1)) {
-                                        killPlayer(victimPlayer.name, attackerPlayer.name, info.getString("weapon"));
+                                    if (victimPlayer != null && victimPlayer.hit(damage.get(info.getInt("weapon")))) {
+                                        killPlayer(victimPlayer.name, attackerPlayer.name, name.get(info.getInt("weapon")));
                                         System.out.println("player " + victimPlayer.name + " is dead");
                                     }
 
@@ -92,6 +108,9 @@ public class Game{
                                     e.printStackTrace();
                                 }
 
+                                break;
+                            case 31:
+                                broadcast(mainMessage);
                                 break;
                         }
                     }
@@ -223,7 +242,8 @@ public class Game{
             if (Communicator.developmentMode) {
                 currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
             } else {
-                currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+                //currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+                currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
             }
 
             playerList.put(conn.name, currentPlayer);
@@ -250,6 +270,10 @@ public class Game{
             conn.write(MessageBuilder.messageBuilder(-3, "You were killed in the last round."));
         } else {
             conn.write(MessageBuilder.messageBuilder(19, masterItemList));
+            conn.write(MessageBuilder.messageBuilder(30, currentPlayer.guns));
+            for (ClientConnection p : clientList) {
+                conn.write(MessageBuilder.messageBuilder(31, p.player.gun));
+            }
         }
     }
 

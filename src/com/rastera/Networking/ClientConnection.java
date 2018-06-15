@@ -229,6 +229,13 @@ class ClientConnection {
                     break;
                 case 20:
                     this.write(MessageBuilder.messageBuilder(20, cGame.takeItem((long[]) obj.message)));
+                    break;
+                case 30:
+                    player.guns = (int[]) obj.message;
+                case 31:
+                    player.gun = ((int[]) obj.message)[1];
+                    this.messages.put(obj);
+
 
             }
         } catch (Exception e) {
