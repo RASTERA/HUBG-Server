@@ -1,3 +1,10 @@
+// PROJECT HUBG | SERVER
+// Henry Tu, Ryan Zhang, Syed Safwaan
+// rastera.xyz
+// 2018 ICS4U FINAL
+//
+// Player.java | Essential player data
+
 package com.rastera.Networking;
 
 import java.io.Serializable;
@@ -7,10 +14,11 @@ public class Player implements Serializable {
 
     float x;
     float y;
-    float rotation;
+    final float rotation;
     float health = 100;
+    float energy = 100;
     int[] guns = new int[2];
-    String name;
+    final String name;
 
     public Player(float x, float y, float rotation, String name) {
         this.x = x;
@@ -27,10 +35,7 @@ public class Player implements Serializable {
     public boolean hit(float dmg) {
         this.health -= dmg;
 
-        if (health <= 0) {
-            return true;
-        }
+        return health <= 0;
 
-        return false;
     }
 }

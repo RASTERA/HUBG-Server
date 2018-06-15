@@ -1,3 +1,10 @@
+// PROJECT HUBG | SERVER
+// Henry Tu, Ryan Zhang, Syed Safwaan
+// rastera.xyz
+// 2018 ICS4U FINAL
+//
+// ClientConnection.java
+
 package com.rastera.Networking;
 
 import org.json.JSONObject;
@@ -9,28 +16,35 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class ClientConnection {
-    public String name;
-    public ObjectInputStream in;
-    public ObjectOutputStream out;
-    public LinkedBlockingQueue<Message> messages;
-    private Socket socket;
-    public int id;
-    public Player player;
-    public JSONObject user;
+// Handles socket with client
+class ClientConnection {
+
+    // Core socket
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
+    private LinkedBlockingQueue<Message> messages;
+    private final Socket socket;
     private Thread read;
 
-    private static LinkedBlockingQueue<ClientConnection> waiting = new LinkedBlockingQueue<>();;
-    private static ArrayList<ClientConnection> clientList = new ArrayList<>();
+    private static final LinkedBlockingQueue<ClientConnection> waiting = new LinkedBlockingQueue<>();
+    private static final ArrayList<ClientConnection> clientList = new ArrayList<>();
     private static Game cGame;
+
+    // General information
+    public String name;
+    private int id;
+    public Player player;
+    private JSONObject user;
 
     public ClientConnection(Socket socket, LinkedBlockingQueue<Message> messages) throws IOException {
         this.socket = socket;
         this.messages = messages;
 
+        // Object streams
         out = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
 
+        // Reader thread
         read = new Thread() {
             public void run() {
                 while (true) {
@@ -57,38 +71,42 @@ public class ClientConnection {
         read.start();
     }
 
+    // Set central message queue
     public void setMessageQueue(LinkedBlockingQueue<Message> messages) {
         this.messages = messages;
     }
 
+    // Sets player object
     public void setPlayer(Player player) {
         this.player = player;
     }
 
+    // Writes to client
     public void write(Object obj) {
         try {
-            //System.out.println("Writing");
             out.writeObject(obj);
-            //System.out.println("Write Success");
         } catch (IOException e) {
             e.printStackTrace();
             terminate();
         }
     }
 
-    public static void acceptPlayer(ClientConnection player) {
+    // Accept player to game
+    private static void acceptPlayer(ClientConnection player) {
         try {
-            Communicator.updateMatches(player.name);
 
             System.out.println(player.name + " accepted");
 
+            // Generate ID based on hashcode
             player.id = player.name.hashCode();
-            player.write(rah.messageBuilder(0, player.id));
+            player.write(MessageBuilder.messageBuilder(0, player.id));
 
+            // Adds player to queue if waiting
             clientList.add(player);
             waiting.add(player);
 
             if (cGame != null) {
+                // Forwards player to main game
                 cGame.addPlayer(player);
             } else {
 
@@ -104,18 +122,17 @@ public class ClientConnection {
             e.printStackTrace();
 
         }
-
-
     }
 
-    public void terminate() {
+    // Terminate socket
+    private void terminate() {
         System.out.println("Terminated " + this.name);
 
+        // Removes remains of player
         if (clientList.contains(this)) {
             clientList.remove(this);
             waiting.remove(this);
             cGame.removePlayer(this);
-            //counter--;
         }
 
         try {
@@ -127,47 +144,54 @@ public class ClientConnection {
 
     }
 
-    public void MessageProcessor(Message obj) {
+    // Process incoming messages
+    private void MessageProcessor(Message obj) {
         try {
             switch (obj.type) {
-                case -2:
+                case -2: // Authentication request
 
                     try {
 
+                        // Validates token with central authentication server
                         String token = (String) obj.message;
                         JSONObject response = Communicator.request(Communicator.RequestType.GET, null, Communicator.getURL(Communicator.RequestDestination.AUTH) + "checkGameAuth/" + token);
 
                         // Duplicate account = auto reject
                         for (ClientConnection conn : clientList) {
                             if (conn.name.equals(response.getString("username"))) {
-                                this.write(rah.messageBuilder(-2, "Error: You are already in game"));
+                                this.write(MessageBuilder.messageBuilder(-2, "Error: You are already in game"));
 
                                 terminate();
                                 break;
                             }
                         }
 
+                        // If response exists
                         if(response.getBoolean("message")) {
 
+                            // If token is for different server
                             if (!response.getString("server").equals(Main.SERVERNAME)) {
-                                this.write(rah.messageBuilder(-2, "Error: Token not valid for this server"));
+                                this.write(MessageBuilder.messageBuilder(-2, "Error: Token not valid for this server"));
                                 terminate();
                             }
 
+                            // If successful, obtain server data
                             JSONObject userData = Communicator.request(Communicator.RequestType.GET, null, Communicator.getURL(Communicator.RequestDestination.API) + "data/" + response.getString("username"));
 
+                            // Update local data
                             this.name = userData.getString("username");
                             this.user = userData;
 
-                            this.write(rah.messageBuilder(-2, "success"));
+                            // Returns success
+                            this.write(MessageBuilder.messageBuilder(-2, "success"));
                             acceptPlayer(this);
 
                         } else {
-                            this.write(rah.messageBuilder(-2, "Error: Rejected by HUBG Authentication Server"));
+                            this.write(MessageBuilder.messageBuilder(-2, "Error: Rejected by HUBG Authentication Server"));
                             terminate();
                         }
                     } catch (Exception e) {
-                        this.write(rah.messageBuilder(-2, "Error: Rejected by HUBG Authentication Server"));
+                        this.write(MessageBuilder.messageBuilder(-2, "Error: Rejected by HUBG Authentication Server"));
                         terminate();
 
                         e.printStackTrace();
@@ -176,30 +200,37 @@ public class ClientConnection {
 
                     break;
 
-                case -1:
-                    this.write(rah.messageBuilder(-1, Main.SERVERNAME));
+                case -1: // Request servername
+                    this.write(MessageBuilder.messageBuilder(-1, Main.SERVERNAME));
                     break;
 
-                case 10:
+                case 10: // Update player location
                     this.player.setLocation((long[]) obj.message);
                     this.messages.put(obj);
                     break;
 
-                case 11:
+                case 11: // Shooting
                     this.messages.put(obj);
                     break;
 
                 case 14: // Get health
-                    this.write(rah.messageBuilder(14, this.player.health));
+                    this.write(MessageBuilder.messageBuilder(14, this.player.health));
+
+                    break;
+
+                case 16: // Set energy
+
+                    if (obj.message != null) {
+                        this.player.energy = (float) obj.message;
+                    }
+
+                    this.write(MessageBuilder.messageBuilder(16, this.player.energy));
+
                     break;
 
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public int getId() {
-        return this.id;
     }
 }

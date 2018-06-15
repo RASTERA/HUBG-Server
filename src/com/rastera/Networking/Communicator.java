@@ -1,17 +1,26 @@
+// PROJECT HUBG | SERVER
+// Henry Tu, Ryan Zhang, Syed Safwaan
+// rastera.xyz
+// 2018 ICS4U FINAL
+//
+// Communicator.java | Link to central auth server
+
 package com.rastera.Networking;
 
 import java.io.*;
 import java.net.*;
 import java.time.Instant;
 import java.util.HashMap;
+
 import org.json.JSONObject;
 import javax.net.ssl.HttpsURLConnection;
 
 class Communicator {
 
     private static String token;
-    private static final boolean developmentMode = !true;
+    public static final boolean developmentMode = true;
 
+    // Establishes API key
     public Communicator() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(new File("token")));
@@ -24,6 +33,7 @@ class Communicator {
         System.out.println("Token loaded successfully");
     }
 
+    // Get URL based on development mode
     private static final HashMap<RequestDestination, String> baseProductionHashMap = new HashMap<RequestDestination, String>() {
         {
             put(RequestDestination.URL, "https://rastera.xyz/");
@@ -51,10 +61,11 @@ class Communicator {
         }
     }
 
+    // General request
+    // GET or POST
     public static JSONObject request(RequestType type, JSONObject data, String destination) {
         try {
             // Init connection
-
             URLConnection socket;
             if (Communicator.developmentMode) {
                 socket = (HttpURLConnection) new URL(destination).openConnection();
@@ -64,12 +75,13 @@ class Communicator {
                 ((HttpsURLConnection) socket).setRequestMethod(type.toString());
             }
 
-            // Header stuff
+            // Configure header
             socket.setConnectTimeout(5000);
             socket.setRequestProperty("User-Agent", "Mozilla/5.0");
             socket.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
             socket.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
+            // Flush JSON if POST request
             if (type == RequestType.POST) {
                 socket.setDoOutput(true);
                 OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream());
@@ -79,16 +91,16 @@ class Communicator {
                 writer.close();
             }
 
+            // Response data
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            String rawData = "";
+            StringBuilder rawData = new StringBuilder();
             String line;
 
             while ((line = reader.readLine()) != null) {
-                rawData += line;
+                rawData.append(line);
             }
 
-            return new JSONObject(rawData);
+            return new JSONObject(rawData.toString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,12 +108,14 @@ class Communicator {
         }
     }
 
-    // Kill
+    // Update player kills
     public static void updateKills(String killer, String opponent, String weapon) {
         Thread socketThread = new Thread(() -> {
             Long date = Instant.now().toEpochMilli();
 
             try {
+
+                // Update attacker kills
                 JSONObject changesKiller = new JSONObject() {
                     {
                         put("kills", 1);
@@ -116,6 +130,7 @@ class Communicator {
                     }
                 };
 
+                // Update victim deaths
                 JSONObject changesOpponent = new JSONObject() {
                     {
                         put("deaths", 1);
@@ -130,6 +145,7 @@ class Communicator {
                     }
                 };
 
+                // Issues changes to auth server
                 Communicator.updateUser(changesKiller, killer);
                 Communicator.updateUser(changesOpponent, opponent);
             } catch (Exception e) {
@@ -141,37 +157,7 @@ class Communicator {
         socketThread.start();
     }
 
-    // Join game
-    public static void updateWins(String username) {
-        Thread socketThread = new Thread(() -> {
-            Long date = Instant.now().toEpochMilli();
-
-            try {
-                JSONObject changes = new JSONObject() {
-                    {
-                        put("wins", 1);
-                        put("actions", new JSONObject() {
-                                {
-                                    put("caption", String.format("Victory!"));
-                                    put("date", date);
-                                    put("type", "KILLED");
-                                }
-                            }
-                        );
-                    }
-                };
-
-                Communicator.updateUser(changes, username);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-        socketThread.setDaemon(true);
-        socketThread.start();
-    }
-
-    // Join game
+    // Update number of matches
     public static void updateMatches(String username) {
         Thread socketThread = new Thread(() -> {
             try {
@@ -191,9 +177,11 @@ class Communicator {
         socketThread.start();
     }
 
-    public static void updateUser(JSONObject changes, String username) {
+    // General user update given changes
+    private static void updateUser(JSONObject changes, String username) {
         // kills, deaths, matches
         try {
+            // Label desired changes and requests
             JSONObject out = new JSONObject() {
                 {
                     put("changes", changes);
@@ -206,9 +194,4 @@ class Communicator {
             e.printStackTrace();
         }
     }
-
-    public static JSONObject getUser(String username) {
-        return Communicator.request(RequestType.GET, null, Communicator.getURL(RequestDestination.API) + "data/" + username);
-    }
-
 }

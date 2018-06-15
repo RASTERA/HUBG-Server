@@ -1,3 +1,10 @@
+// PROJECT HUBG | SERVER
+// Henry Tu, Ryan Zhang, Syed Safwaan
+// rastera.xyz
+// 2018 ICS4U FINAL
+//
+// Game.java | Central game logic
+
 package com.rastera.Networking;
 
 import org.json.JSONObject;
@@ -6,15 +13,13 @@ import java.net.ServerSocket;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Game{
-    private ArrayList<ClientConnection> clientList;
-    private LinkedBlockingQueue<Message> gameMessage;
-    private ArrayList<String> deadQueue;
-    public HashMap<String, Player> playerList ;
+class Game {
 
-    private ServerSocket serverSocket;
-
-    private boolean Started = false;
+    // Keep track of players
+    private final ArrayList<ClientConnection> clientList;
+    private final LinkedBlockingQueue<Message> gameMessage;
+    private final ArrayList<String> deadQueue;
+    private final HashMap<String, Player> playerList ;
 
     public Game() {
         clientList = new ArrayList<>();
@@ -22,57 +27,98 @@ public class Game{
         playerList= new HashMap<>();
         deadQueue = new ArrayList<>();
 
-        Thread GameProcessor = new Thread() {
-            public void run() {
-                startGame();
-                while (true) {
-                    try {
-                        while (true) {
-                            Message mainMessage = gameMessage.take();
-
-                            System.out.println("Receive location update");
-
-                            switch (mainMessage.type) {
-                                case 10:
-                                    broadcast(mainMessage);
-                                    break;
-                                case 11:
-                                    JSONObject info = new JSONObject((String) mainMessage.message);
-
-                                    try {
-                                        Player victimPlayer = getPlayerFromID(info.getInt("enemy"));
-                                        Player attackerPlayer = getPlayerFromID(info.getInt("attacker"));
-
-                                        // Null = shoot at air
-                                        if (victimPlayer != null && victimPlayer.hit(1)) {
-                                            killPlayer(victimPlayer.name, attackerPlayer.name, info.getString("weapon"));
-                                            System.out.println("player " + victimPlayer.name + " is dead");
-                                        }
-
-                                        //victimConnection.write(rah.messageBuilder(11, mainMessage.message));
-
-                                        broadcast(rah.messageBuilder(11, mainMessage.message));
-
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    break;
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+        // Apply regen to players every 10 seconds
+        Thread regenThread = new Thread(() -> {
+            while (true) {
+                try {
+                    regen();
+                    Thread.sleep(10000);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-        };
+        });
+
+        regenThread.start();
+
+        // Game logic and processor thread
+        // Location and kills
+        Thread GameProcessor = new Thread(() -> {
+            while (true) {
+                try {
+                    while (true) {
+                        Message mainMessage = gameMessage.take();
+
+                        System.out.println("Receive location update");
+
+                        switch (mainMessage.type) {
+                            case 10: // Location update
+                                broadcast(mainMessage);
+                                break;
+                            case 11: // Shooting
+                                JSONObject info = new JSONObject((String) mainMessage.message);
+
+                                try {
+                                    Player victimPlayer = getPlayerFromID(info.getInt("enemy"));
+                                    Player attackerPlayer = getPlayerFromID(info.getInt("attacker"));
+
+                                    // Null = shoot at air
+                                    if (victimPlayer != null && victimPlayer.hit(1)) {
+                                        killPlayer(victimPlayer.name, attackerPlayer.name, info.getString("weapon"));
+                                        System.out.println("player " + victimPlayer.name + " is dead");
+                                    }
+
+                                    broadcast(MessageBuilder.messageBuilder(11, mainMessage.message));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                break;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
 
         GameProcessor.setDaemon(true);
         GameProcessor.start();
 
     }
 
-    public Player getPlayerFromID(int id) {
+    // Regen health
+    private void regen() {
+        System.out.println("Trying to update health...");
+
+        Player player;
+
+        // Loops through all players alive
+        for (String name : playerList.keySet()) {
+            player = playerList.get(name);
+
+            // Restricts health and energy
+            player.health = Math.min(100, player.health + 1);
+            player.energy = Math.min(100, player.energy + 1);
+
+            System.out.println("Updating " + name);
+
+            // Locate connection if connected
+            for (ClientConnection conn : clientList) {
+                if (conn.name.equals(name)) {
+                    System.out.println("Communicated " + name);
+                    conn.write(MessageBuilder.messageBuilder(14, player.health));
+                    conn.write(MessageBuilder.messageBuilder(16, player.energy));
+                    break;
+                }
+            }
+        }
+    }
+
+    // Get player object from UID
+    private Player getPlayerFromID(int id) {
         for (String name : playerList.keySet()) {
             if (name.hashCode() == id) {
                 return playerList.get(name);
@@ -82,60 +128,54 @@ public class Game{
         return null;
     }
 
-    public void broadcast(Message message) {
+    // Send message to all clients
+    private void broadcast(Message message) {
         for (ClientConnection client : clientList) {
             client.write(message);
         }
     }
 
-    public boolean hasStarted() {
-        return Started;
-    }
-
-    public int size() {
-        return clientList.size();
-    }
-
-    public LinkedList<Player> findPlayersInRange (Message locationUpdate) {
-        LinkedList<Player> enemyPlayers = new LinkedList<>();
-        return enemyPlayers;
-    }
-
-    public void killPlayer(String targetName, String killer, String weapon) {
+    // Handle death
+    private void killPlayer(String targetName, String killer, String weapon) {
         Player player = playerList.get(targetName);
 
         boolean playerConnected = false;
 
+        // Searches for player if connected
         for (ClientConnection conn : clientList) {
             if (conn.player == player) {
-                conn.write(rah.messageBuilder(-3, String.format("You were killed by %s with %s.", killer, weapon)));
-                //conn.terminate();
+                conn.write(MessageBuilder.messageBuilder(-3, String.format("You were killed by %s with %s.", killer, weapon)));
                 playerConnected = true;
                 break;
             }
         }
 
+        // Queues death message for next connection
         if (!playerConnected) {
             System.out.println("Added to death queue");
             deadQueue.add(targetName);
         }
 
+        // Reports kill to central auth server
         Communicator.updateKills(killer, targetName, weapon);
 
-        broadcast(rah.messageBuilder(15, targetName.hashCode())); // Remove player
-        broadcast(rah.messageBuilder(13, playerList.size())); // Update player count
-        broadcast(rah.messageBuilder(12, String.format("%s was killed by %s with %s.", targetName, killer, weapon))); // Broadcast death
+        broadcast(MessageBuilder.messageBuilder(15, targetName.hashCode())); // Remove player
+        broadcast(MessageBuilder.messageBuilder(13, playerList.size())); // Update player count
+        broadcast(MessageBuilder.messageBuilder(12, String.format("%s was killed by %s with %s.", targetName, killer, weapon))); // Broadcast death
 
         playerList.remove(targetName);
     }
 
+    // Remove player from match (connection)
     public void removePlayer(ClientConnection conn) {
         clientList.remove(conn);
     }
 
+    // Add player to match
     public void addPlayer(ClientConnection conn) {
         clientList.add(conn);
 
+        // Positions of all current players
         ArrayList<long[]> locations = new ArrayList<>();
 
         System.out.println("ADDED PLAYER " + conn.name);
@@ -146,87 +186,37 @@ public class Game{
         if (playerList.containsKey(conn.name)) {
             currentPlayer = playerList.get(conn.name);
         } else {
-            //currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
-            currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+            Communicator.updateMatches(conn.name);
+
+            // Randomizes position if not in development
+            if (Communicator.developmentMode) {
+                currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+            } else {
+                currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+            }
 
             playerList.put(conn.name, currentPlayer);
         }
 
+
         conn.setPlayer(currentPlayer);
         conn.setMessageQueue(gameMessage);
 
+        // Add other player locations to "update bundle"
         for (String username : playerList.keySet()) {
             Player user = playerList.get(username);
 
             locations.add(new long[] {(long) (user.x * 1000f), (long) (user.y * 1000f), (long) (user.rotation * 1000f), username.hashCode()});
         }
 
-        broadcast(rah.messageBuilder(1, locations)); // Announce new user
-        broadcast(rah.messageBuilder(13, playerList.size())); // Update player count
+        broadcast(MessageBuilder.messageBuilder(1, locations)); // Announce new user with positions of current players
+        broadcast(MessageBuilder.messageBuilder(13, playerList.size())); // Update player count
 
+        // Announce if they were killed last round
         if (deadQueue.contains(conn.name)) {
             deadQueue.remove(conn.name);
 
-            conn.write(rah.messageBuilder(-3, "You were killed in the last round."));
+            conn.write(MessageBuilder.messageBuilder(-3, "You were killed in the last round."));
         }
-
-        //killPlayer("karlz", "lol", "lol");
-
-
-        /*
-        if (clientList.size() == 2) {
-            Thread GameProcessor = new Thread() {
-                public void run() {
-                    startGame();
-                    while (true) {
-                        try {
-                            while (clientList.size() != 1) {
-                                Message mainMessage = gameMessage.take();
-
-                                System.out.println("Receive location update");
-
-                                switch (mainMessage.type) {
-                                    case 10:
-                                        broadcast(mainMessage);
-                                        break;
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            };
-
-            GameProcessor.setDaemon(true);
-            GameProcessor.start();
-        }*/
-    }
-
-    public void startGame() {
-        this.Started = true;
-
-        /*
-        Player currentPlayer;
-        Random rand = new Random();
-
-        ///////////////////////////
-        // Temp var
-        ArrayList<float[]> locations = new ArrayList<>();
-
-
-        ///////////////////////////
-
-
-        for (ClientConnection conn : clientList) {
-            currentPlayer = new Player(rand.nextFloat()*-50, rand.nextFloat()*-50, (float) Math.toRadians(rand.nextFloat()*360));
-            conn.setPlayer(currentPlayer);
-            conn.setMessageQueue(gameMessage);
-            //playerList.add(currentPlayer);
-
-            locations.add(new float[] {currentPlayer.x, currentPlayer.y, currentPlayer.rotation, conn.getId()});
-        }
-
-        broadcast(rah.messageBuilder(1, locations)); */
     }
 }
