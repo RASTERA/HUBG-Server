@@ -147,7 +147,7 @@ public class Game{
             // Locate connection if connected
             for (ClientConnection conn : clientList) {
                 if (conn.name.equals(name)) {
-                    System.out.println("Communicated " + name);
+                    System.out.println("Communicated " + name + " H:" + player.health + " E:" + player.energy);
                     conn.write(MessageBuilder.messageBuilder(14, player.health));
                     conn.write(MessageBuilder.messageBuilder(16, player.energy));
                     break;
@@ -264,6 +264,7 @@ public class Game{
 
         broadcast(MessageBuilder.messageBuilder(1, locations)); // Announce new user with positions of current players
         broadcast(MessageBuilder.messageBuilder(13, playerList.size())); // Update player count
+        //broadcast(MessageBuilder.messageBuilder(17, playerList.keySet().toArray(new String[playerList.size()]))); // Update player names
 
         // Announce if they were killed last round
         if (deadQueue.contains(conn.name)) {
