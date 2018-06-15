@@ -9,23 +9,41 @@ package com.rastera.Networking;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class Game {
-
-    // Keep track of players
-    private final ArrayList<ClientConnection> clientList;
-    private final LinkedBlockingQueue<Message> gameMessage;
-    private final ArrayList<String> deadQueue;
-    private final HashMap<String, Player> playerList ;
+public class Game{
+    private ArrayList<ClientConnection> clientList;
+    private LinkedBlockingQueue<Message> gameMessage;
+    private ArrayList<String> deadQueue;
+    public ConcurrentHashMap<String, Player> playerList ;
+    private ConcurrentHashMap<Long, ArrayList<long[]>> masterItemList = new ConcurrentHashMap<>();
+    private int maxItemID = -1000;
 
     public Game() {
         clientList = new ArrayList<>();
         gameMessage = new LinkedBlockingQueue<>();
-        playerList= new HashMap<>();
+        playerList= new ConcurrentHashMap<>();
         deadQueue = new ArrayList<>();
+
+        try {
+            Scanner input = new Scanner(new File("assets/itemData.txt"));
+            int id;
+
+            while (input.hasNext()) {
+                id = Integer.parseInt(input.nextLine().split(",")[0]);
+                System.out.println(id);
+                masterItemList.put((long) id, new ArrayList<long[]>());
+
+                maxItemID = Math.min(maxItemID, id);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // Apply regen to players every 10 seconds
         Thread regenThread = new Thread(() -> {
@@ -117,8 +135,21 @@ class Game {
         }
     }
 
+    public boolean takeItem(long[] item) {
+        ArrayList<long[]> itemarray = masterItemList.get((long) item[2]);
+
+        for (int i = 0; i < itemarray.size(); i++) {
+            if (itemarray.get(i)[0] == item[0] && itemarray.get(i)[1] == item[1]) {
+                itemarray.remove(i);
+                broadcast(rah.messageBuilder(21, item));
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Get player object from UID
-    private Player getPlayerFromID(int id) {
+    public Player getPlayerFromID(int id) {
         for (String name : playerList.keySet()) {
             if (name.hashCode() == id) {
                 return playerList.get(name);
@@ -216,7 +247,22 @@ class Game {
         if (deadQueue.contains(conn.name)) {
             deadQueue.remove(conn.name);
 
-            conn.write(MessageBuilder.messageBuilder(-3, "You were killed in the last round."));
+            conn.write(rah.messageBuilder(-3, "You were killed in the last round."));
+        } else {
+            conn.write(rah.messageBuilder(19, masterItemList));
         }
+    }
+
+    public void startGame() {
+
+        Random rand = new Random();
+
+        System.out.println(rand.nextInt(1));
+
+        for (int i = 0; i < 1000; i++) {
+            masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(new long[] {(long) (rand.nextDouble() * 10000000), (long) (rand.nextDouble() * 10000000)});
+        }
+
+
     }
 }

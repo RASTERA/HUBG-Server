@@ -227,6 +227,8 @@ class ClientConnection {
                     this.write(MessageBuilder.messageBuilder(16, this.player.energy));
 
                     break;
+                case 20:
+                    this.write(rah.messageBuilder(20, cGame.takeItem((long[]) obj.message)));
 
             }
         } catch (Exception e) {
