@@ -141,7 +141,7 @@ public class Game{
         for (int i = 0; i < itemarray.size(); i++) {
             if (itemarray.get(i)[0] == item[0] && itemarray.get(i)[1] == item[1]) {
                 itemarray.remove(i);
-                broadcast(rah.messageBuilder(21, item));
+                broadcast(MessageBuilder.messageBuilder(21, item));
                 return true;
             }
         }
@@ -247,9 +247,9 @@ public class Game{
         if (deadQueue.contains(conn.name)) {
             deadQueue.remove(conn.name);
 
-            conn.write(rah.messageBuilder(-3, "You were killed in the last round."));
+            conn.write(MessageBuilder.messageBuilder(-3, "You were killed in the last round."));
         } else {
-            conn.write(rah.messageBuilder(19, masterItemList));
+            conn.write(MessageBuilder.messageBuilder(19, masterItemList));
         }
     }
 
