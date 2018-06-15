@@ -296,6 +296,7 @@ public class Game{
             for (String username : playerList.keySet()) {
                 conn.write(MessageBuilder.messageBuilder(31, new int []{playerList.get(username).gun, username.hashCode()}));
             }
+            conn.write(MessageBuilder.messageBuilder(32, new int[] {currentPlayer.ammo, currentPlayer.gunammo[0], currentPlayer.gunammo[1]}));
         }
     }
 

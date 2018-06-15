@@ -21,6 +21,8 @@ public class Player implements Serializable {
     int[] gunAmmo = {0, 0};
     final String name;
     int gun = 0;
+    int ammo = 0;
+    int[] gunammo  = {0, 0};
 
     public Player(float x, float y, float rotation, String name) {
         this.x = x;

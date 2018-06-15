@@ -232,9 +232,17 @@ class ClientConnection {
                     break;
                 case 30:
                     player.guns = (int[]) obj.message;
+                    break;
                 case 31:
                     player.gun = ((int[]) obj.message)[1];
                     this.messages.put(obj);
+                    break;
+                case 32:
+                    int[] ammo = (int[]) obj.message;
+                    player.ammo = ammo[0];
+                    player.gunammo[0] = ammo[1];
+                    player.gunammo[1] = ammo[2];
+                    break;
 
 
             }
