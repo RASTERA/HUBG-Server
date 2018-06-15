@@ -208,21 +208,28 @@ public class Game{
             if (conn.player == player) {
                 conn.write(MessageBuilder.messageBuilder(-3, String.format("You were killed by %s with %s.", killer, weapon)));
                 playerConnected = true;
-
-                player.ammo += player.gunAmmo[0] + player.gunammo[1];
-
-                for (int i = player.ammo; player.ammo > 30; i -= 30) {
-                    gameMessage.add(MessageBuilder.messageBuilder(22, new long[] {-1004, (long) (player.x * 1000), (long) (player.y * 1000)}));
-                }
-
-                if (player.guns[0] != 0) {
-                    gameMessage.add(MessageBuilder.messageBuilder(22, new long[] {player.guns[0], (long) (player.x * 1000), (long) (player.y * 1000)}));
-                }
-                if (player.guns[1] != 0){
-                    gameMessage.add(MessageBuilder.messageBuilder(22, new long[] {player.guns[1], (long) (player.x * 1000), (long) (player.y * 1000)}));
-                }
                 break;
             }
+        }
+
+        try {
+            player.ammo += player.gunAmmo[0] + player.gunammo[1];
+
+            for (int i = player.ammo; i >= 30; i -= 30) {
+                System.out.println("k " + i);
+                gameMessage.put(MessageBuilder.messageBuilder(22, new long[]{-1004, (long) (player.x * 1000), (long) (player.y * 1000)}));
+            }
+
+            if (player.guns[0] != 0) {
+                System.out.println("k " + player.guns[0]);
+                gameMessage.put(MessageBuilder.messageBuilder(22, new long[]{player.guns[0], (long) (player.x * 1000), (long) (player.y * 1000)}));
+            }
+            if (player.guns[1] != 0) {
+                System.out.println("k " + player.guns[1]);
+                gameMessage.put(MessageBuilder.messageBuilder(22, new long[]{player.guns[1], (long) (player.x * 1000), (long) (player.y * 1000)}));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // Queues death message for next connection
@@ -265,7 +272,7 @@ public class Game{
             Communicator.updateMatches(conn.name);
 
             // Randomizes position if not in development
-            if (Communicator.developmentMode) {
+            if (!Communicator.developmentMode) {
                 currentPlayer = new Player(1000, 1000, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
             } else {
                 position = Main.randomPosition();
