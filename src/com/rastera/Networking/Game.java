@@ -332,11 +332,16 @@ public class Game{
 
         System.out.println(maxItemID);
 
-        for (int i = 0; i < 10000; i++) {
-            masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(Main.randomPosition());
+        long[] itemPosition;
+
+        for (int i = 0; i < 1000; i++) {
+            itemPosition = Main.randomPosition();
+
+            masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(itemPosition);
         }
 
-        masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(new long[] {1000, 1000});
+        masterItemList.get((long) -1004).add(new long[] {1010, 1010});
+        masterItemList.get((long) -1003).add(new long[] {1005, 1005});
 
 
     }
