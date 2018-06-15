@@ -271,7 +271,7 @@ public class Game{
                 position = Main.randomPosition();
 
                 //currentPlayer = new Player((int) (10000 * Math.random()), (int) (10000 * Math.random()), (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
-                currentPlayer = new Player(position[0], position[1], (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
+                currentPlayer = new Player(position[0] / 1000f, position[1] / 1000f, (float) Math.toRadians(rand.nextFloat() * 360), conn.name);
             }
 
             playerList.put(conn.name, currentPlayer);

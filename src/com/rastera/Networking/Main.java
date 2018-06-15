@@ -51,7 +51,7 @@ class Main {
                 for (int x = 0; x < line.length; x++) {
 
                     if (line[x].equals("204") || line[x].equals("4")) {
-                        validPositions.add(new long[]{(long) x * 10, (long) y * 10});
+                        validPositions.add(new long[]{(long) x * 10000, (long) y * 10000});
                     }
                 }
             }
