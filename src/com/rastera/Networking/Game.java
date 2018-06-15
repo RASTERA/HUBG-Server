@@ -44,7 +44,7 @@ public class Game{
                 id = Integer.parseInt(data[0]);
                 name.put(id, data[1]);
                 masterItemList.put((long) id, new ArrayList<long[]>());
-
+                System.out.println(id);
                 maxItemID = Math.min(maxItemID, id);
             }
 
@@ -57,6 +57,8 @@ public class Game{
                 id = Integer.parseInt(data[0]);
                 damage.put(id, Integer.parseInt(data[5]));
             }
+
+            startGame();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -271,8 +273,8 @@ public class Game{
         } else {
             conn.write(MessageBuilder.messageBuilder(19, masterItemList));
             conn.write(MessageBuilder.messageBuilder(30, currentPlayer.guns));
-            for (ClientConnection p : clientList) {
-                conn.write(MessageBuilder.messageBuilder(31, p.player.gun));
+            for (String username : playerList.keySet()) {
+                conn.write(MessageBuilder.messageBuilder(31, new int []{playerList.get(username).gun, username.hashCode()}));
             }
         }
     }
@@ -281,11 +283,13 @@ public class Game{
 
         Random rand = new Random();
 
-        System.out.println(rand.nextInt(1));
+        System.out.println(maxItemID);
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10000; i++) {
             masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(new long[] {(long) (rand.nextDouble() * 10000000), (long) (rand.nextDouble() * 10000000)});
         }
+
+        masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(new long[] {1000, 1000});
 
 
     }

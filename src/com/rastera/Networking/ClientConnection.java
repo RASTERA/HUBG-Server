@@ -32,7 +32,7 @@ class ClientConnection {
 
     // General information
     public String name;
-    private int id;
+    public int id;
     public Player player;
     private JSONObject user;
 
