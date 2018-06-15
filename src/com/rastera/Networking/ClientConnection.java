@@ -225,13 +225,7 @@ class ClientConnection {
                     }
 
                     this.write(MessageBuilder.messageBuilder(16, this.player.energy));
-
                     break;
-
-                    /*
-                case 17: // Get all usernames
-
-                    this.write(MessageBuilder.messageBuilder(17, cGame.playerList.keySet()));*/
 
                 case 20:
                     this.write(MessageBuilder.messageBuilder(20, cGame.takeItem((long[]) obj.message)));

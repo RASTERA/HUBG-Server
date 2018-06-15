@@ -228,7 +228,7 @@ public class Game{
         clientList.add(conn);
 
         // Positions of all current players
-        ArrayList<long[]> locations = new ArrayList<>();
+        ArrayList<String> locations = new ArrayList<>();
 
         System.out.println("ADDED PLAYER " + conn.name);
 
@@ -255,16 +255,35 @@ public class Game{
         conn.setPlayer(currentPlayer);
         conn.setMessageQueue(gameMessage);
 
+        JSONObject userJSON;
+
         // Add other player locations to "update bundle"
         for (String username : playerList.keySet()) {
             Player user = playerList.get(username);
 
-            locations.add(new long[] {(long) (user.x * 1000f), (long) (user.y * 1000f), (long) (user.rotation * 1000f), username.hashCode()});
+            userJSON = new JSONObject();
+
+            try {
+
+                userJSON.put("name", username);
+                userJSON.put("id", username.hashCode());
+                userJSON.put("position", new JSONObject() {
+                    {
+                        put("x", (long) (user.x * 1000f));
+                        put("y",(long) (user.y * 1000f));
+                        put("r",(long) (user.rotation * 1000f));
+                        put("id", username.hashCode());
+                    }
+                });
+
+                locations.add(userJSON.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         broadcast(MessageBuilder.messageBuilder(1, locations)); // Announce new user with positions of current players
         broadcast(MessageBuilder.messageBuilder(13, playerList.size())); // Update player count
-        //broadcast(MessageBuilder.messageBuilder(17, playerList.keySet().toArray(new String[playerList.size()]))); // Update player names
 
         // Announce if they were killed last round
         if (deadQueue.contains(conn.name)) {

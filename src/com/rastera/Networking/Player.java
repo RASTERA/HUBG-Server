@@ -18,6 +18,7 @@ public class Player implements Serializable {
     float health = 100;
     float energy = 100;
     int[] guns = {0, 0};
+    int[] gunAmmo = {0, 0};
     final String name;
     int gun = 0;
 
