@@ -68,15 +68,24 @@ public class Game{
 
         // Apply regen to players every 10 seconds
         Thread regenThread = new Thread(() -> {
+            Long itemCount;
+
             while (true) {
                 try {
                     regen();
 
-                    if (masterItemList.size() < 1000) {
+                    itemCount = 0L;
+
+                    for (Long id : masterItemList.keySet()) {
+                        itemCount += masterItemList.get(id).size();
+                    }
+
+                    if (itemCount < 1000) {
                         for (int i = 0; i < 20; i++) {
                             spawnItem();
                         }
                     }
+
                     Thread.sleep(10000);
                 } catch (Exception e) {
                     e.printStackTrace();
