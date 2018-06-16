@@ -100,6 +100,7 @@ class Server {
 
             System.out.println(data);
 
+            Communicator.developmentMode = data.getBoolean("development");
             Main.SERVERNAME = data.getString("servername");
 
             serverSocket = new ServerSocket(data.getInt("port"), 1000000, InetAddress.getByName(data.getString("address")));
