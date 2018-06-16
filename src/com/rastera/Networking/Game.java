@@ -26,6 +26,8 @@ public class Game{
     private ConcurrentHashMap<Integer, Integer> damage = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Integer, String> name = new ConcurrentHashMap<>();
 
+    private static Random random = new Random();
+
     public Game() {
         clientList = new ArrayList<>();
         gameMessage = new LinkedBlockingQueue<>();
@@ -69,6 +71,12 @@ public class Game{
             while (true) {
                 try {
                     regen();
+
+                    if (masterItemList.size() < 1000) {
+                        for (int i = 0; i < 20; i++) {
+                            spawnItem();
+                        }
+                    }
                     Thread.sleep(10000);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -334,18 +342,18 @@ public class Game{
         }
     }
 
-    public void startGame() {
+    public void spawnItem() {
+        long[] itemPosition = Main.randomPosition();
 
-        Random rand = new Random();
+        masterItemList.get((long) - Game.random.nextInt(Math.abs(maxItemID+1000)) - 1001).add(itemPosition);
+    }
+
+    public void startGame() {
 
         System.out.println(maxItemID);
 
-        long[] itemPosition;
-
         for (int i = 0; i < 1000; i++) {
-            itemPosition = Main.randomPosition();
-
-            masterItemList.get((long) -rand.nextInt(Math.abs(maxItemID+1000)) - 1001).add(itemPosition);
+            spawnItem();
         }
 
         masterItemList.get((long) -1004).add(new long[] {1010, 1010});

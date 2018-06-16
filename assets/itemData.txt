@@ -5,4 +5,4 @@
 -1004,AMMO,30 Rounds of bullets,images/hubg-logo.png,ammo
 -1005,Health Pack,+30HP,images/hubg-logo.png,consumable
 -1006,Soylent,+20 Energy,items/SideView/soylent.png,consumable
--1007,Grenade Launcher,+20 Energy,items/SideView/-1002.png,weapon
+-1007,Grenade Launcher,Nuclear weapon,items/SideView/-1007.png,weapon
