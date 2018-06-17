@@ -66,6 +66,34 @@ public class Game{
             e.printStackTrace();
         }
 
+        Thread messageBroadcasterThread = new Thread(() -> {
+            try {
+                String msg;
+                while (true) {
+
+                    msg = Main.broadcastQueue.take();
+
+                    if (msg != null) {
+
+                        System.out.println("Sending: " + msg);
+
+                        // Searches for player if connected
+                        for (ClientConnection conn : clientList) {
+
+                            conn.write(MessageBuilder.messageBuilder(-3, msg));
+
+                        }
+
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        messageBroadcasterThread.setDaemon(true);
+        messageBroadcasterThread.start();
+
         // Apply regen to players every 10 seconds
         Thread regenThread = new Thread(() -> {
             Long itemCount;

@@ -15,9 +15,7 @@ import java.io.FileReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 class Main {
@@ -25,6 +23,7 @@ class Main {
     // Server name for authentication purposes
     public static String SERVERNAME;
     public static ArrayList<long[]> validPositions = new ArrayList<>();
+    public static LinkedBlockingQueue<String> broadcastQueue = new LinkedBlockingQueue<>();
 
     public static long[] randomPosition() {
         return validPositions.get((int) (Math.random() * validPositions.size()));
@@ -61,12 +60,24 @@ class Main {
 
             Server gameServer = new Server();
 
-            Scanner input = new Scanner(System.in);
-
-            String temp = input.next();
-
             System.gc();
 
+
+            Scanner input = new Scanner(System.in);
+
+            while (true) {
+                String[] command = input.nextLine().split("~");
+
+                switch (command[0]) {
+                    case "broadcast":
+                        System.out.println("Added to queue: " + command[1]);
+                        broadcastQueue.add(command[1]);
+                        break;
+                    case "exit":
+                        throw new Exception("Terminated");
+                }
+
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
